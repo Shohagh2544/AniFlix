@@ -55,7 +55,7 @@ async function showEpisodes(s) {
     const b = document.createElement("button");
     b.textContent = "Ep " + ep.episode_number;
     b.onclick = () => {
-      player.className = "player";
+      player.className = "player"; var o = document.getElementById("fs"); if (o) o.remove(); if (ep.video_url) player.insertAdjacentHTML("afterend", '<a id="fs" href="' + esc(ep.video_url) + '" target="_blank" style="display:inline-block;margin:0 0 12px;color:#fff">Open full screen</a>');
       player.innerHTML = '<iframe src="' + esc(ep.video_url || ('https://www.dailymotion.com/embed/video/' + encodeURIComponent(ep.dailymotion_id))) + '" allowfullscreen allow="autoplay; fullscreen"></iframe>';
     };
     list.appendChild(b);
