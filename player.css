@@ -1,0 +1,21 @@
+.vp { position: absolute; inset: 0; background: #000; user-select: none; }
+.vp video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+.vp .big {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 64px; height: 64px; border-radius: 50%; font-size: 26px; color: #fff;
+  background: rgba(139,92,246,0.85); border: 0;
+}
+.vp.playing .big { display: none; }
+.vp .bar {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 10px 6px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  opacity: 0; transition: opacity .25s; pointer-events: none;
+}
+.vp.show .bar, .vp:not(.playing) .bar { opacity: 1; pointer-events: auto; }
+.vp .seek { width: 100%; margin: 0 0 4px; accent-color: #8b5cf6; }
+.vp .row { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 13px; }
+.vp .row button {
+  background: rgba(255,255,255,0.12); color: #fff; border: 0; border-radius: 8px;
+  padding: 6px 9px; font-size: 13px;
+}
+.vp .time { flex: 1; text-align: center; }

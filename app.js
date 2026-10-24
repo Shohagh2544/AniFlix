@@ -47,7 +47,7 @@ async function showHome() {
 
 function videoInfo(ep) {
   var u = ep.video_url;
-  if (u && /\.(mp4|webm|m4v)(\?|$)/i.test(u)) return { kind: "video", src: u };
+  if (u && /\.(mp4|webm|m4v|m3u8)(\?|$)/i.test(u)) return { kind: "video", src: u };
   var src = u || (ep.dailymotion_id ? "https://www.dailymotion.com/embed/video/" + encodeURIComponent(ep.dailymotion_id) : "");
   return src ? { kind: "iframe", src: src } : null;
 }
@@ -93,12 +93,13 @@ async function showSeries(id) {
     var player = !v
       ? '<div class="empty">No video yet.</div>'
       : v.kind === "video"
-        ? '<video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video>'
+        ? '<div class="vp" data-src="' + esc(v.src) + '"></div>'
         : '<iframe src="' + esc(v.src) + '" allowfullscreen allow="autoplay; fullscreen"></iframe>';
     var fs = v && v.kind === "iframe"
       ? '<a class="fs" href="' + esc(v.src) + '" target="_blank" rel="noopener">Full screen ↗</a>' : "";
     stage.innerHTML = '<div class="player">' + player + "</div>" +
       '<div class="now"><span>' + esc(ep.title || ("Episode " + ep.episode_number)) + "</span>" + fs + "</div>";
+    if (window.initPlayers) initPlayers(stage);
     stage.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
