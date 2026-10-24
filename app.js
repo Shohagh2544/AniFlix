@@ -1,11 +1,13 @@
-const SUPABASE_URL = "https://wzltxdwrcmrfxxrwqxvm.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6bHR4ZHdyY21yZnh4cndxeHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4MjczMTgsImV4cCI6MjEwODQwMzMxOH0.OefY2EBUDOkxNZX46QWczQy3Bw1p40WWR8igHfXgui0";
+(function () {
+var SUPABASE_URL = "https://wzltxdwrcmrfxxrwqxvm.supabase.co";
+var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6bHR4ZHdyY21yZnh4cndxeHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4MjczMTgsImV4cCI6MjEwODQwMzMxOH0.OefY2EBUDOkxNZX46QWczQy3Bw1p40WWR8igHfXgui0";
 
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const app = document.getElementById("app");
-let allSeries = null;
+var app = document.getElementById("app");
+if (!window.supabase) { app.innerHTML = '<div class="empty">Could not load the Supabase library. Check your internet and refresh.</div>'; return; }
+var db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+var allSeries = null;
 
-const IC = {
+var IC = {
   search: '<svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
   bm: '<svg class="i" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>'
 };
@@ -26,7 +28,8 @@ function toggleList(id) {
   return i === -1;
 }
 function setTab(name) {
-  document.querySelectorAll("#tabs a").forEach(function (a) { a.classList.toggle("on", a.getAttribute("data-tab") === name); });
+  var tabs = document.querySelectorAll("#tabs a");
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle("on", tabs[i].getAttribute("data-tab") === name);
 }
 async function loadSeries() {
   if (allSeries) return allSeries;
@@ -49,7 +52,7 @@ function poster(s) {
     '<div class="pt glass">' + esc(s.title) + "</div></a>";
 }
 function topBar(title) {
-  return '<div class="top"><div class="logo">' + esc(title || "AniFlix") + '</div><a class="avatar glass" href="#search" aria-label="Search">' + IC.search + "</a></div>";
+  return '<div class="topbar"><div class="logo">' + esc(title || "AniFlix") + '</div><a class="avatar glass" href="#search" aria-label="Search">' + IC.search + "</a></div>";
 }
 
 async function homeView() {
@@ -123,8 +126,8 @@ async function seriesView(id) {
   try { last = localStorage.getItem("aniflix-last-" + id); } catch (e) {}
   var lastIdx = -1;
   eps.forEach(function (e, i) { if (String(e.id) === last) lastIdx = i; });
-  var desc = s.description || "";
-  var long = desc.length > 120;
+  var text = s.description || "";
+  var long = text.length > 120;
 
   app.innerHTML =
     '<div class="backdrop">' + (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" onerror="this.remove()">' : "") + '<div class="shade"></div>' +
@@ -133,7 +136,7 @@ async function seriesView(id) {
     '<div class="info"><h1>' + esc(s.title) + '</h1><div class="chips">' +
     '<span class="chip">' + eps.length + (eps.length === 1 ? " episode" : " episodes") + "</span>" + chips(s) + "</div>" +
     '<button class="btn primary" id="go">▶ ' + (lastIdx > -1 ? "Continue Watching" : "Start Watching") + "</button>" +
-    (desc ? '<p class="desc' + (long ? " clamp" : "") + '" id="desc">' + esc(desc) + "</p>" : "") +
+    (text ? '<p class="desc' + (long ? " clamp" : "") + '" id="desc">' + esc(text) + "</p>" : "") +
     (long ? '<button class="more" id="more">More</button>' : "") +
     '<div id="stage"></div><div id="nav"></div>' +
     '<div class="eh"><h2 class="h">Episodes</h2>' + (eps.length > 1 ? '<button class="sort glass" id="sort">Newest first</button>' : "") + "</div>" +
@@ -141,7 +144,7 @@ async function seriesView(id) {
 
   var stage = document.getElementById("stage"), nav = document.getElementById("nav");
   var listEl = document.getElementById("el"), sortBtn = document.getElementById("sort");
-  var cur = -1, desc2 = false;
+  var cur = -1, newest = false;
 
   document.getElementById("save").addEventListener("click", function () { this.classList.toggle("on", toggleList(id)); });
   var more = document.getElementById("more");
@@ -156,7 +159,7 @@ async function seriesView(id) {
   function renderList() {
     if (!eps.length) { listEl.innerHTML = '<div class="empty" style="padding:16px 0">No episodes yet.</div>'; return; }
     var idx = eps.map(function (x, i) { return i; });
-    if (desc2) idx.reverse();
+    if (newest) idx.reverse();
     listEl.innerHTML = idx.map(function (i) {
       var ep = eps[i], n = epNum(ep, i), active = i === cur;
       var sub = active ? "Now playing" : (String(ep.id) === last ? "Continue watching" : "Episode " + n);
@@ -176,7 +179,7 @@ async function seriesView(id) {
     else if (v.kind === "video") player = '<video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video>';
     else player = '<iframe src="' + esc(v.src) + '" allowfullscreen allow="autoplay; fullscreen"></iframe>';
     stage.innerHTML = '<div class="player">' + player + "</div>";
-    if (window.initPlayers) initPlayers(stage);
+    if (window.initPlayers) window.initPlayers(stage);
 
     var fs = v && v.kind === "iframe" ? '<a href="' + esc(v.src) + '" target="_blank" rel="noopener">Full screen ↗</a>' : "";
     nav.innerHTML = '<div class="navrow"><button class="navb glass" id="prev"' + (i === 0 ? " disabled" : "") + '>‹ Prev</button>' +
@@ -197,8 +200,8 @@ async function seriesView(id) {
     if (b) play(Number(b.getAttribute("data-i")), true);
   });
   if (sortBtn) sortBtn.addEventListener("click", function () {
-    desc2 = !desc2;
-    sortBtn.textContent = desc2 ? "Oldest first" : "Newest first";
+    newest = !newest;
+    sortBtn.textContent = newest ? "Oldest first" : "Newest first";
     renderList();
   });
   renderList();
@@ -215,3 +218,4 @@ function route() {
 }
 window.addEventListener("hashchange", route);
 route();
+})();
