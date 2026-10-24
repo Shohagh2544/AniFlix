@@ -48,18 +48,18 @@ function poster(s) {
     (s.rating ? '<span class="rate glass">★ ' + esc(s.rating) + "</span>" : "") +
     '<div class="pt glass">' + esc(s.title) + "</div></a>";
 }
-function top(title) {
+function topBar(title) {
   return '<div class="top"><div class="logo">' + esc(title || "AniFlix") + '</div><a class="avatar glass" href="#search" aria-label="Search">' + IC.search + "</a></div>";
 }
 
 async function homeView() {
   setTab("home"); document.title = "AniFlix";
-  app.innerHTML = top() + '<div class="hero skel"></div>';
+  app.innerHTML = topBar() + '<div class="hero skel"></div>';
   var list;
-  try { list = await loadSeries(); } catch (e) { app.innerHTML = top() + err(e); return; }
-  if (!list.length) { app.innerHTML = top() + '<div class="empty">No series yet.</div>'; return; }
+  try { list = await loadSeries(); } catch (e) { app.innerHTML = topBar() + err(e); return; }
+  if (!list.length) { app.innerHTML = topBar() + '<div class="empty">No series yet.</div>'; return; }
   var f = list.find(function (s) { return s.cover_url; }) || list[0];
-  app.innerHTML = top() +
+  app.innerHTML = topBar() +
     '<a class="hero" href="#series-' + esc(f.id) + '">' +
     (f.cover_url ? '<img src="' + esc(f.cover_url) + '" alt="" onerror="this.remove()">' : "") +
     '<div class="shade"></div><div class="hc"><div class="chips">' + chips(f) + "</div><h1>" + esc(f.title) + "</h1><p>" + esc(f.description) +
@@ -70,10 +70,10 @@ async function homeView() {
 
 async function searchView() {
   setTab("search"); document.title = "Search · AniFlix";
-  app.innerHTML = top("Search") + '<div class="empty">Loading...</div>';
+  app.innerHTML = topBar("Search") + '<div class="empty">Loading...</div>';
   var list;
-  try { list = await loadSeries(); } catch (e) { app.innerHTML = top("Search") + err(e); return; }
-  app.innerHTML = top("Search") + '<label class="sbar glass">' + IC.search +
+  try { list = await loadSeries(); } catch (e) { app.innerHTML = topBar("Search") + err(e); return; }
+  app.innerHTML = topBar("Search") + '<label class="sbar glass">' + IC.search +
     '<input id="q" type="search" placeholder="Search anime..." autocomplete="off"></label><div id="res"></div>';
   var q = document.getElementById("q"), res = document.getElementById("res");
   function draw() {
@@ -88,12 +88,12 @@ async function searchView() {
 
 async function listView() {
   setTab("list"); document.title = "My List · AniFlix";
-  app.innerHTML = top("My List") + '<div class="empty">Loading...</div>';
+  app.innerHTML = topBar("My List") + '<div class="empty">Loading...</div>';
   var list;
-  try { list = await loadSeries(); } catch (e) { app.innerHTML = top("My List") + err(e); return; }
+  try { list = await loadSeries(); } catch (e) { app.innerHTML = topBar("My List") + err(e); return; }
   var ids = getList();
   var l = list.filter(function (s) { return ids.indexOf(Number(s.id)) !== -1; });
-  app.innerHTML = top("My List") + (l.length ? '<div class="grid">' + l.map(poster).join("") + "</div>" : '<div class="empty">Tap the bookmark on a series to save it here.</div>');
+  app.innerHTML = topBar("My List") + (l.length ? '<div class="grid">' + l.map(poster).join("") + "</div>" : '<div class="empty">Tap the bookmark on a series to save it here.</div>');
 }
 
 function videoInfo(ep) {
