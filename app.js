@@ -55,7 +55,7 @@ async function showEpisodes(s) {
     const b = document.createElement("button");
     b.textContent = "Ep " + ep.episode_number;
     b.onclick = () => {
-      player.className = "player glass";
+      player.className = "player";
       player.innerHTML = '<iframe src="' + esc(ep.video_url || ('https://www.dailymotion.com/embed/video/' + encodeURIComponent(ep.dailymotion_id))) + '" allowfullscreen allow="autoplay; fullscreen"></iframe>';
     };
     list.appendChild(b);
