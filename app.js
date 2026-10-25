@@ -87,7 +87,6 @@ async function searchView() {
   }
   q.addEventListener("input", draw);
   draw();
-  q.focus();
 }
 
 async function listView() {
@@ -258,8 +257,6 @@ async function openSS(btn) {
   el.classList.add("show");
   document.body.style.overflow = "hidden";
   drawSS();
-  inp.focus();
-  setTimeout(function () { inp.focus(); }, 320);
   try { await loadSeries(); } catch (e) {}
   drawSS();
 }
@@ -379,7 +376,6 @@ async function openSS(btn) {
   void p.offsetWidth;
   el.classList.add("show");
   document.body.style.overflow = "hidden";
-  setTimeout(function () { if (el.classList.contains("show")) inp.focus(); }, 430);
   setTimeout(function () { if (el.classList.contains("show")) { ssImgs = true; drawSSNow(); } }, 470);
   try { await loadSeries(); } catch (e) {}
   drawSSNow();
