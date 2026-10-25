@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=19">
-<link rel="stylesheet" href="player.css?v=19">
+<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="player.css?v=20">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -111,6 +111,10 @@ body.watching .tabbar{transform:translate(-50%,160%);opacity:0;pointer-events:no
 html,body{height:100%;min-height:0!important;overflow:hidden!important}
 #app{position:fixed!important;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 </style>
+<style id="fulltitle">
+.wtitle{min-width:0;flex:1}
+.wtitle .a{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25;word-break:break-word}
+</style>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -122,7 +126,7 @@ html,body{height:100%;min-height:0!important;overflow:hidden!important}
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=19"></script>
-<script src="app.js?v=19"></script>
+<script src="player.js?v=20"></script>
+<script src="app.js?v=20"></script>
 </body>
 </html>
