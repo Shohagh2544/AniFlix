@@ -532,7 +532,7 @@ async function allView(kind) {
   q.addEventListener("input", draw);
   draw();
 }
-function route() {
+function routeAll() {
   var h = location.hash;
   if (h === "#all-anime" || h === "#all-movies") {
     document.body.classList.remove("watching");
@@ -544,9 +544,9 @@ function route() {
     var tabs = document.getElementById("tabs");
     if (tabs) tabs.style.setProperty("--i", "0");
     allView(h === "#all-movies" ? "movies" : "anime");
-    return;
+    return true;
   }
-  route2();
+  return false;
 }
 async function movieView(id) {
   setTab("home");
@@ -593,6 +593,7 @@ async function playMovieView(id) {
   if (window.initPlayers) window.initPlayers(app);
 }
 function route() {
+  if (routeAll()) return;
   var h = location.hash, mm = h.match(/^#movie-(\d+)$/), pm = h.match(/^#playmovie-(\d+)$/);
   if (!mm && !pm) { route1(); return; }
   document.body.classList.toggle("watching", !!pm);
