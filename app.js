@@ -284,26 +284,37 @@ document.addEventListener("keydown", function (e) { if (e.key === "Escape") clos
 window.addEventListener("hashchange", closeSS);
 function goWatch(sid, eid) { location.hash = "#watch-" + sid + "-" + eid; }
 
+var watchCache = {}, lastWatch = null;
 async function watchView(sid, eid) {
   setTab("home");
-  document.title = "Watching · AniFlix";
-  app.innerHTML = '<div class="wbar"><a class="wback glass" href="#series-' + sid + '" aria-label="Back">\u2039</a></div><div class="player skel"></div>';
-  var results;
-  try {
-    results = await Promise.all([
-      db.from("series").select("*").eq("id", sid).maybeSingle(),
-      db.from("episodes").select("*").eq("series_id", sid).order("episode_number")
-    ]);
-  } catch (e) { app.innerHTML = err(e); return; }
-  var sr = results[0], er = results[1];
-  if (sr.error || er.error) { app.innerHTML = err(sr.error || er.error); return; }
-  var s = sr.data, eps = er.data || [];
+  var same = !!(lastWatch && lastWatch.sid === sid);
+  if (same) app.classList.add("epswitch");
+  var cached = watchCache[sid];
+  if (!cached) {
+    document.title = "Watching \u00b7 AniFlix";
+    app.innerHTML = '<div class="wbar"><a class="wback glass" href="#series-' + sid + '" aria-label="Back">\u2039</a></div><div class="player skel"></div>';
+    var results;
+    try {
+      results = await Promise.all([
+        db.from("series").select("*").eq("id", sid).maybeSingle(),
+        db.from("episodes").select("*").eq("series_id", sid).order("episode_number")
+      ]);
+    } catch (e) { app.innerHTML = err(e); return; }
+    var sr = results[0], er = results[1];
+    if (sr.error || er.error) { app.innerHTML = err(sr.error || er.error); return; }
+    if (!sr.data) { app.innerHTML = '<div class="empty">Series not found.</div>'; return; }
+    cached = watchCache[sid] = { s: sr.data, eps: er.data || [] };
+  }
+  var s = cached.s, eps = cached.eps;
   var i = -1;
   eps.forEach(function (x, k) { if (Number(x.id) === eid) i = k; });
-  if (!s || i < 0) { app.innerHTML = '<div class="empty">Episode not found.</div>'; return; }
+  if (i < 0) { app.innerHTML = '<div class="empty">Episode not found.</div>'; return; }
   var ep = eps[i];
+  var dir = 0;
+  if (same && lastWatch.i !== i) dir = i > lastWatch.i ? 1 : -1;
+  lastWatch = { sid: sid, i: i };
   try { localStorage.setItem("aniflix-last-" + sid, String(ep.id)); } catch (e) {}
-  document.title = (s.title || "") + " · AniFlix";
+  document.title = (s.title || "") + " \u00b7 AniFlix";
   function num(x, k) { return x.episode_number != null ? x.episode_number : k + 1; }
   function go(k) { location.replace("#watch-" + sid + "-" + eps[k].id); }
 
@@ -320,19 +331,15 @@ async function watchView(sid, eid) {
       '<span class="go">' + (active ? "\u275a\u275a" : "\u25b6") + '</span></button>';
   }).join("");
 
+  var sw = dir === 0 ? "" : (dir > 0 ? " swap-f" : " swap-b");
   app.innerHTML =
-    '<div class="wbar"><a class="wback glass" href="#series-' + sid + '" aria-label="Back">\u2039</a><div class="wtitle"><span class="a">' + esc(s.title) + '</span><span class="b">Episode ' + esc(num(ep, i)) + '</span></div></div>' +
-    '<div class="player">' + player + '</div>' +
-    '<div class="navrow wnav"><button class="navb glass" id="wprev"' + (i === 0 ? " disabled" : "") + '>\u2039 Prev</button>' +
+    '<div class="wbar"><a class="wback glass" href="#series-' + sid + '" aria-label="Back">\u2039</a><div class="wtitle' + sw + '"><span class="a" style="white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25">' + esc(s.title) + '</span><span class="b">Episode ' + esc(num(ep, i)) + '</span></div></div>' +
+    '<div class="player' + sw + ' swap-d1">' + player + '</div>' +
+    '<div class="navrow wnav' + sw + ' swap-d2"><button class="navb glass" id="wprev"' + (i === 0 ? " disabled" : "") + '>\u2039 Prev</button>' +
     '<div class="mid"><span class="t">' + esc(ep.title || ("Episode " + num(ep, i))) + '</span></div>' +
     '<button class="navb glass" id="wnext"' + (i === eps.length - 1 ? " disabled" : "") + '>Next \u203a</button></div>' +
     '<h2 class="h">Episodes</h2><div class="el" id="wel">' + rows + '</div>';
 
-  if (oneMovie(s, eps)) {
-    var wb = app.querySelector(".wtitle .b"); if (wb) wb.textContent = "Movie";
-    var wn = app.querySelector(".wnav"); if (wn) wn.style.display = "none";
-    var wl = app.querySelector("#wel"); if (wl) { wl.style.display = "none"; if (wl.previousElementSibling) wl.previousElementSibling.style.display = "none"; }
-  }
   if (window.initPlayers) window.initPlayers(app);
   var vid = app.querySelector("video");
   if (vid) vid.addEventListener("ended", function () { if (i < eps.length - 1) go(i + 1); });
@@ -349,7 +356,7 @@ async function watchView(sid, eid) {
 function route1() {
   var w = location.hash.match(/^#watch-(\d+)-(\d+)$/);
   document.body.classList.toggle("watching", !!w);
-  if (!w) { route0(); return; }
+  if (!w) { lastWatch = null; route0(); return; }
   app.scrollTop = 0;
   app.className = "wrap";
   void app.offsetWidth;
