@@ -214,7 +214,7 @@ function route0() {
   var tab = h === "#search" ? 1 : h === "#list" ? 2 : 0;
   var cls = "enter-u";
   if (!m) { cls = tab > lastTab ? "enter-r" : (tab < lastTab ? "enter-l" : "enter-u"); lastTab = tab; }
-  window.scrollTo(0, 0);
+  app.scrollTop = 0;
   app.className = m ? "flush" : "wrap";
   void app.offsetWidth;
   app.className += " " + cls;
@@ -349,7 +349,7 @@ function route1() {
   var w = location.hash.match(/^#watch-(\d+)-(\d+)$/);
   document.body.classList.toggle("watching", !!w);
   if (!w) { route0(); return; }
-  window.scrollTo(0, 0);
+  app.scrollTop = 0;
   app.className = "wrap";
   void app.offsetWidth;
   app.className = "wrap enter-r";
@@ -423,7 +423,7 @@ async function openSS(btn) {
   if (!bar || !inp) return;
   if (bar.classList.contains("open")) { inp.readOnly = false; inp.focus(); return; }
   var res = ssEnsure(), bd = document.getElementById("ssbd");
-  window.scrollTo(0, 0);
+  app.scrollTop = 0;
   ssImgs = false;
   drawSSNow();
   document.body.style.overflow = "hidden";
@@ -530,7 +530,7 @@ function route() {
   var h = location.hash, mm = h.match(/^#movie-(\d+)$/), pm = h.match(/^#playmovie-(\d+)$/);
   if (!mm && !pm) { route1(); return; }
   document.body.classList.toggle("watching", !!pm);
-  window.scrollTo(0, 0);
+  app.scrollTop = 0;
   app.className = mm ? "flush" : "wrap";
   void app.offsetWidth;
   app.className += mm ? " enter-u" : " enter-r";
