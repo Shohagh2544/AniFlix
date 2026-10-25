@@ -207,11 +207,19 @@ async function seriesView(id) {
   renderList();
 }
 
+var lastTab = 0;
 function route() {
   var h = location.hash, m = h.match(/^#series-(\d+)$/);
+  var tab = h === "#search" ? 1 : h === "#list" ? 2 : 0;
+  var cls = "enter-u";
+  if (!m) { cls = tab > lastTab ? "enter-r" : (tab < lastTab ? "enter-l" : "enter-u"); lastTab = tab; }
   window.scrollTo(0, 0);
-  if (m) { app.className = "flush"; seriesView(Number(m[1])); return; }
-  app.className = "wrap";
+  app.className = m ? "flush" : "wrap";
+  void app.offsetWidth;
+  app.className += " " + cls;
+  var tabs = document.getElementById("tabs");
+  if (tabs) tabs.style.setProperty("--i", String(m ? 0 : tab));
+  if (m) { seriesView(Number(m[1])); return; }
   if (h === "#search") searchView();
   else if (h === "#list") listView();
   else homeView();

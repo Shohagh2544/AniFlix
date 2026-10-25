@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=7">
-<link rel="stylesheet" href="player.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="player.css?v=8">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -29,18 +29,38 @@ body,.bg{background:#000!important}
 .er.active .num{background:linear-gradient(135deg,#ff3b47,#c1121f)!important}
 .er.active .s,.more,.navrow .mid a{color:#fff!important}
 </style>
+<style id="smooth">
+.tabbar{--i:0}
+.pill{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 20px) / 3);border-radius:999px;background:linear-gradient(135deg,#ff3b47,#c1121f);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 6px 18px rgba(229,9,20,.45);transform:translateX(calc(var(--i) * (100% + 4px)));transition:transform .5s cubic-bezier(.34,1.35,.5,1)}
+.tabbar a{position:relative;z-index:1;transition:color .25s,transform .2s}
+.tabbar a.on{background:transparent!important;box-shadow:none!important;color:#fff!important}
+.tabbar a:active{transform:scale(.92)}
+.tabbar a svg{transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.tabbar a.on svg{transform:translateY(-1px) scale(1.12)}
+#app.enter-r{animation:inR .4s cubic-bezier(.22,.9,.3,1) both}
+#app.enter-l{animation:inL .4s cubic-bezier(.22,.9,.3,1) both}
+#app.enter-u{animation:inU .4s cubic-bezier(.22,.9,.3,1) both}
+@keyframes inR{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
+@keyframes inL{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
+@keyframes inU{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+#app>*{animation:fadeUp .45s cubic-bezier(.22,.9,.3,1) both}
+#app>*:nth-child(2){animation-delay:.04s}
+#app>*:nth-child(3){animation-delay:.08s}
+#app>*:nth-child(4){animation-delay:.12s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+</style>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
 <div id="app" class="wrap"><div class="empty">Loading AniFlix...</div></div>
-<nav class="tabbar glass" id="tabs">
+<nav class="tabbar glass" id="tabs"><span class="pill"></span>
   <a href="#" data-tab="home"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</a>
   <a href="#search" data-tab="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Search</a>
   <a href="#list" data-tab="list"><svg class="i" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>My List</a>
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=7"></script>
-<script src="app.js?v=7"></script>
+<script src="player.js?v=8"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>
