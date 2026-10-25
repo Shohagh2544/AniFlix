@@ -195,10 +195,10 @@ async function seriesView(id) {
     if (scroll) stage.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  document.getElementById("go").addEventListener("click", function () { if (eps.length) play(lastIdx > -1 ? lastIdx : 0, true); });
+  document.getElementById("go").addEventListener("click", function () { if (eps.length) goWatch(id, eps[lastIdx > -1 ? lastIdx : 0].id); });
   listEl.addEventListener("click", function (e) {
     var b = e.target.closest ? e.target.closest(".er") : null;
-    if (b) play(Number(b.getAttribute("data-i")), true);
+    if (b) goWatch(id, eps[Number(b.getAttribute("data-i"))].id);
   });
   if (sortBtn) sortBtn.addEventListener("click", function () {
     newest = !newest;
@@ -209,7 +209,7 @@ async function seriesView(id) {
 }
 
 var lastTab = 0;
-function route() {
+function route0() {
   var h = location.hash, m = h.match(/^#series-(\d+)$/);
   var tab = h === "#search" ? 1 : h === "#list" ? 2 : 0;
   var cls = "enter-u";
@@ -283,6 +283,77 @@ document.addEventListener("click", function (e) {
 document.addEventListener("input", function (e) { if (e.target && e.target.id === "ssin") drawSS(); });
 document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSS(); });
 window.addEventListener("hashchange", closeSS);
+function goWatch(sid, eid) { location.hash = "#watch-" + sid + "-" + eid; }
+
+async function watchView(sid, eid) {
+  setTab("home");
+  document.title = "Watching · AniFlix";
+  app.innerHTML = '<div class="wbar"><a class="wback glass" href="#series-' + sid + '" aria-label="Back">\u2039</a></div><div class="player skel"></div>';
+  var results;
+  try {
+    results = await Promise.all([
+      db.from("series").select("*").eq("id", sid).maybeSingle(),
+      db.from("episodes").select("*").eq("series_id", sid).order("episode_number")
+    ]);
+  } catch (e) { app.innerHTML = err(e); return; }
+  var sr = results[0], er = results[1];
+  if (sr.error || er.error) { app.innerHTML = err(sr.error || er.error); return; }
+  var s = sr.data, eps = er.data || [];
+  var i = -1;
+  eps.forEach(function (x, k) { if (Number(x.id) === eid) i = k; });
+  if (!s || i < 0) { app.innerHTML = '<div class="empty">Episode not found.</div>'; return; }
+  var ep = eps[i];
+  try { localStorage.setItem("aniflix-last-" + sid, String(ep.id)); } catch (e) {}
+  document.title = (s.title || "") + " · AniFlix";
+  function num(x, k) { return x.episode_number != null ? x.episode_number : k + 1; }
+  function go(k) { location.replace("#watch-" + sid + "-" + eps[k].id); }
+
+  var v = videoInfo(ep), player;
+  if (!v) player = '<div class="empty">No video yet.</div>';
+  else if (v.kind === "video" && window.initPlayers) player = '<div class="vp" data-src="' + esc(v.src) + '"></div>';
+  else if (v.kind === "video") player = '<video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video>';
+  else player = '<iframe src="' + esc(v.src) + '" allowfullscreen allow="autoplay; fullscreen"></iframe>';
+
+  var rows = eps.map(function (x, k) {
+    var n = num(x, k), active = k === i;
+    return '<button class="er glass' + (active ? " active" : "") + '" data-i="' + k + '"><span class="num">' + esc(n) + '</span>' +
+      '<span class="meta"><span class="t">' + esc(x.title || ("Episode " + n)) + '</span><span class="s">' + (active ? "Now playing" : "Episode " + esc(n)) + '</span></span>' +
+      '<span class="go">' + (active ? "\u275a\u275a" : "\u25b6") + '</span></button>';
+  }).join("");
+
+  app.innerHTML =
+    '<div class="wbar"><a class="wback glass" href="#series-' + sid + '" aria-label="Back">\u2039</a><div class="wtitle"><span class="a">' + esc(s.title) + '</span><span class="b">Episode ' + esc(num(ep, i)) + '</span></div></div>' +
+    '<div class="player">' + player + '</div>' +
+    '<div class="navrow wnav"><button class="navb glass" id="wprev"' + (i === 0 ? " disabled" : "") + '>\u2039 Prev</button>' +
+    '<div class="mid"><span class="t">' + esc(ep.title || ("Episode " + num(ep, i))) + '</span></div>' +
+    '<button class="navb glass" id="wnext"' + (i === eps.length - 1 ? " disabled" : "") + '>Next \u203a</button></div>' +
+    '<h2 class="h">Episodes</h2><div class="el" id="wel">' + rows + '</div>';
+
+  if (window.initPlayers) window.initPlayers(app);
+  var vid = app.querySelector("video");
+  if (vid) vid.addEventListener("ended", function () { if (i < eps.length - 1) go(i + 1); });
+  document.getElementById("wprev").addEventListener("click", function () { if (i > 0) go(i - 1); });
+  document.getElementById("wnext").addEventListener("click", function () { if (i < eps.length - 1) go(i + 1); });
+  document.getElementById("wel").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".er") : null;
+    if (!b) return;
+    var k = Number(b.getAttribute("data-i"));
+    if (k !== i) go(k);
+  });
+}
+
+function route() {
+  var w = location.hash.match(/^#watch-(\d+)-(\d+)$/);
+  document.body.classList.toggle("watching", !!w);
+  if (!w) { route0(); return; }
+  window.scrollTo(0, 0);
+  app.className = "wrap";
+  void app.offsetWidth;
+  app.className = "wrap enter-r";
+  var tabs = document.getElementById("tabs");
+  if (tabs) tabs.style.setProperty("--i", "0");
+  watchView(Number(w[1]), Number(w[2]));
+}
 window.addEventListener("hashchange", route);
 route();
 })();
