@@ -49,7 +49,7 @@ function poster(s) {
   return '<a class="pc" href="#series-' + esc(s.id) + '">' +
     (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" decoding="async" loading="lazy" onerror="this.remove()">' : "") +
     (s.rating ? '<span class="rate glass">★ ' + esc(s.rating) + "</span>" : "") +
-    '<div class="pt glass">' + esc(s.title) + "</div></a>";
+    '<div class="pt glass"><span>' + esc(s.title) + "</span></div></a>";
 }
 function topBar(title, withSearch) {
   return '<div class="topbar" id="topbar"><div class="logo">' + esc(title || "AniFlix") + '</div>' +
@@ -469,7 +469,7 @@ function moviePoster(m) {
   return '<a class="pc" href="#movie-' + esc(m.id) + '">' +
     (m.cover_url ? '<img src="' + esc(m.cover_url) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : "") +
     (m.rating ? '<span class="rate glass">\u2605 ' + esc(m.rating) + "</span>" : "") +
-    '<div class="pt glass">' + esc(m.title) + "</div></a>";
+    '<div class="pt glass"><span>' + esc(m.title) + "</span></div></a>";
 }
 async function homeView() {
   await homeView0();
