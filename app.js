@@ -78,7 +78,7 @@ async function searchView() {
   var list;
   try { list = await loadSeries(); } catch (e) { app.innerHTML = topBar("Search") + err(e); return; }
   app.innerHTML = topBar("Search") + '<label class="sbar glass">' + IC.search +
-    '<input id="q" type="search" placeholder="Search anime..." autocomplete="off"></label><div id="res"></div>';
+    '<input id="q" readonly type="search" placeholder="Search anime..." autocomplete="off"></label><div id="res"></div>';
   var q = document.getElementById("q"), res = document.getElementById("res");
   function draw() {
     var t = q.value.trim().toLowerCase();
@@ -231,7 +231,7 @@ function ssEnsure() {
   el.id = "ss";
   el.className = "ss";
   el.innerHTML = '<div class="ssb"></div><div class="ssp glass"><div class="ssh"><label class="ssi">' + IC.search +
-    '<input id="ssin" type="search" placeholder="Search anime..." autocomplete="off"></label><button class="ssc" id="ssc">Cancel</button></div><div class="ssr" id="ssr"></div></div>';
+    '<input id="ssin" readonly type="search" placeholder="Search anime..." autocomplete="off"></label><button class="ssc" id="ssc">Cancel</button></div><div class="ssr" id="ssr"></div></div>';
   document.body.appendChild(el);
   return el;
 }
@@ -389,6 +389,14 @@ function closeSS() {
   document.body.style.overflow = "";
   setTimeout(function () { if (!el.classList.contains("show")) { inp.value = ""; ssImgs = false; } }, 450);
 }
+document.addEventListener("pointerdown", function (e) {
+  var t = e.target;
+  if (t && (t.id === "q" || t.id === "ssin") && t.readOnly) t.readOnly = false;
+}, true);
+document.addEventListener("focusout", function (e) {
+  var t = e.target;
+  if (t && (t.id === "q" || t.id === "ssin")) t.readOnly = true;
+});
 window.addEventListener("hashchange", route);
 route();
 })();
