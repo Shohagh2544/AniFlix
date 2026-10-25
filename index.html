@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=22">
-<link rel="stylesheet" href="player.css?v=22">
+<link rel="stylesheet" href="style.css?v=23">
+<link rel="stylesheet" href="player.css?v=23">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -115,6 +115,21 @@ html,body{height:100%;min-height:0!important;overflow:hidden!important}
 .wtitle{min-width:0;flex:1}
 .wtitle .a{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25;word-break:break-word}
 </style>
+<script id="rotate">
+(function () {
+  function onFs() {
+    var fs = document.fullscreenElement || document.webkitFullscreenElement;
+    var o = window.screen && screen.orientation;
+    if (!o) return;
+    try {
+      if (fs) { if (o.lock) { var p = o.lock("landscape"); if (p && p.catch) p.catch(function () {}); } }
+      else if (o.unlock) o.unlock();
+    } catch (e) {}
+  }
+  document.addEventListener("fullscreenchange", onFs);
+  document.addEventListener("webkitfullscreenchange", onFs);
+})();
+</script>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -126,7 +141,7 @@ html,body{height:100%;min-height:0!important;overflow:hidden!important}
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=22"></script>
-<script src="app.js?v=22"></script>
+<script src="player.js?v=23"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>
