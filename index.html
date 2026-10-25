@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=36">
-<link rel="stylesheet" href="player.css?v=36">
+<link rel="stylesheet" href="style.css?v=37">
+<link rel="stylesheet" href="player.css?v=37">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -230,6 +230,13 @@ body:has(.topbar.open) .tabbar{opacity:0!important;pointer-events:none!important
 }
 }
 </style>
+<style id="viewall">
+.rowhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rowhead .h{min-width:0}
+.va{flex:none;margin-top:12px;padding:8px 15px;font-size:13px;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;transition:transform .15s,background .2s}
+.va:active{transform:scale(.94)}
+@media (min-width:900px){.va{margin-top:20px;font-size:14px}}
+</style>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -241,7 +248,7 @@ body:has(.topbar.open) .tabbar{opacity:0!important;pointer-events:none!important
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=36"></script>
+<script src="player.js?v=37"></script>
 <script id="nativeplayer">
 (function () {
   window.initPlayers = function (root) {
@@ -262,7 +269,7 @@ body:has(.topbar.open) .tabbar{opacity:0!important;pointer-events:none!important
   };
 })();
 </script>
-<script src="app.js?v=36"></script>
+<script src="app.js?v=37"></script>
 <script id="scrollfx">
 (function () {
   var app = document.getElementById("app");

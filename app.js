@@ -479,16 +479,74 @@ function moviePoster(m) {
     (m.rating ? '<span class="rate glass">\u2605 ' + esc(m.rating) + "</span>" : "") +
     '<div class="pt glass"><span>' + esc(m.title) + "</span></div></a>";
 }
+function rowHead(h, href) {
+  if (!h || !h.parentNode || h.parentNode.classList.contains("rowhead")) return;
+  var w = document.createElement("div");
+  w.className = "rowhead";
+  h.parentNode.insertBefore(w, h);
+  w.appendChild(h);
+  var b = document.createElement("a");
+  b.className = "va";
+  b.href = href;
+  b.textContent = "View all";
+  w.appendChild(b);
+  var row = w.nextElementSibling;
+  if (row && row.classList.contains("row")) while (row.children.length > 10) row.removeChild(row.lastChild);
+}
 async function homeView() {
   await homeView0();
-  var ms;
-  try { ms = await loadMovies(); } catch (e) { return; }
-  if (!ms.length) return;
+  var ms = null;
+  try { ms = await loadMovies(); } catch (e) {}
   if (location.hash && location.hash !== "#") return;
-  var html = '<h2 class="h">Movies</h2><div class="row">' + ms.map(moviePoster).join("") + "</div>";
-  var row = app.querySelector(".row");
-  if (row) row.insertAdjacentHTML("afterend", html);
-  else app.insertAdjacentHTML("beforeend", html);
+  if (ms && ms.length) {
+    var html = '<h2 class="h">Movies</h2><div class="row">' + ms.slice(0, 10).map(moviePoster).join("") + "</div>";
+    var row = app.querySelector(".row");
+    if (row) row.insertAdjacentHTML("afterend", html);
+    else app.insertAdjacentHTML("beforeend", html);
+  }
+  var hs = app.querySelectorAll("h2.h");
+  for (var i = 0; i < hs.length; i++) {
+    var h = hs[i], t = h.textContent.trim();
+    if (t === "Recommended for You" || t === "Anime") { h.textContent = "Anime"; rowHead(h, "#all-anime"); }
+    else if (t === "Movies") rowHead(h, "#all-movies");
+    else if (t === "Browse all") { var g = h.nextElementSibling; if (g && g.classList.contains("grid")) g.remove(); h.remove(); }
+  }
+}
+async function allView(kind) {
+  setTab("home");
+  var isM = kind === "movies", title = isM ? "Movies" : "Anime";
+  document.title = title + " \u00b7 AniFlix";
+  var head = '<div class="wbar"><a class="wback glass" href="#" aria-label="Back">\u2039</a><div class="wtitle"><span class="a">' + title + '</span><span class="b" id="cnt">&nbsp;</span></div></div>';
+  app.innerHTML = head + skeletons(8);
+  var list;
+  try { list = isM ? await loadMovies() : await loadSeries(); } catch (e) { app.innerHTML = head + err(e); return; }
+  if (location.hash !== "#all-" + kind) return;
+  app.innerHTML = head + '<label class="sbar glass">' + IC.search + '<input id="allq" type="search" placeholder="Search ' + title.toLowerCase() + '..." autocomplete="off"></label><div id="allg"></div>';
+  var cnt = document.getElementById("cnt"), box = document.getElementById("allg"), q = document.getElementById("allq");
+  function draw() {
+    var t = q.value.trim().toLowerCase();
+    var l = list.filter(function (s) { return (s.title || "").toLowerCase().indexOf(t) !== -1; });
+    cnt.textContent = l.length + (l.length === 1 ? " title" : " titles");
+    box.innerHTML = l.length ? '<div class="grid" style="margin-top:14px">' + l.map(isM ? moviePoster : poster).join("") + "</div>" : '<div class="empty">No results.</div>';
+  }
+  q.addEventListener("input", draw);
+  draw();
+}
+function route() {
+  var h = location.hash;
+  if (h === "#all-anime" || h === "#all-movies") {
+    document.body.classList.remove("watching");
+    if (typeof lastWatch !== "undefined") lastWatch = null;
+    app.className = "wrap";
+    void app.offsetWidth;
+    app.className = "wrap enter-r";
+    app.scrollTop = 0;
+    var tabs = document.getElementById("tabs");
+    if (tabs) tabs.style.setProperty("--i", "0");
+    allView(h === "#all-movies" ? "movies" : "anime");
+    return;
+  }
+  route2();
 }
 async function movieView(id) {
   setTab("home");
