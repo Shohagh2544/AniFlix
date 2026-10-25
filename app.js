@@ -47,7 +47,7 @@ function chips(s) {
 }
 function poster(s) {
   return '<a class="pc" href="#series-' + esc(s.id) + '">' +
-    (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
+    (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" decoding="async" loading="lazy" onerror="this.remove()">' : "") +
     (s.rating ? '<span class="rate glass">★ ' + esc(s.rating) + "</span>" : "") +
     '<div class="pt glass">' + esc(s.title) + "</div></a>";
 }
@@ -65,7 +65,7 @@ async function homeView() {
   var f = list.find(function (s) { return s.cover_url; }) || list[0];
   app.innerHTML = topBar("", true) +
     '<a class="hero" href="#series-' + esc(f.id) + '">' +
-    (f.cover_url ? '<img src="' + esc(f.cover_url) + '" alt="" onerror="this.remove()">' : "") +
+    (f.cover_url ? '<img src="' + esc(f.cover_url) + '" alt="" decoding="async" onerror="this.remove()">' : "") +
     '<div class="shade"></div><div class="hc"><div class="chips">' + chips(f) + "</div><h1>" + esc(f.title) + "</h1><p>" + esc(f.description) +
     '</p><span class="btn primary">▶ Watch now</span></div></a>' +
     '<h2 class="h">Recommended for You</h2><div class="row">' + list.map(poster).join("") + "</div>" +
@@ -131,7 +131,7 @@ async function seriesView(id) {
   var long = text.length > 120;
 
   app.innerHTML =
-    '<div class="backdrop">' + (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" onerror="this.remove()">' : "") + '<div class="shade"></div>' +
+    '<div class="backdrop">' + (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" decoding="async" onerror="this.remove()">' : "") + '<div class="shade"></div>' +
     '<a class="rb l glass" href="#" aria-label="Back">‹</a>' +
     '<button class="rb r glass' + (inList(id) ? " on" : "") + '" id="save" aria-label="My List">' + IC.bm + "</button></div>" +
     '<div class="info"><h1>' + esc(s.title) + '</h1><div class="chips">' +
@@ -239,7 +239,7 @@ function ssEnsure() {
 function ssRow(s) {
   var sub = [s.year, s.rating ? "\u2605 " + s.rating : "", s.genre].filter(Boolean).join(" \u00b7 ");
   return '<a class="rr" href="#series-' + esc(s.id) + '"><span class="th">' +
-    (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" onerror="this.remove()">' : "") +
+    (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" decoding="async" onerror="this.remove()">' : "") +
     '</span><span class="meta"><span class="t">' + esc(s.title) + '</span><span class="s">' + esc(sub || "Anime") + '</span></span><span class="go">\u203a</span></a>';
 }
 function drawSS() {
@@ -353,6 +353,45 @@ function route() {
   var tabs = document.getElementById("tabs");
   if (tabs) tabs.style.setProperty("--i", "0");
   watchView(Number(w[1]), Number(w[2]));
+}
+var ssImgs = false, ssRaf = 0;
+function ssRow(s) {
+  var sub = [s.year, s.rating ? "\u2605 " + s.rating : "", s.genre].filter(Boolean).join(" \u00b7 ");
+  return '<a class="rr" href="#series-' + esc(s.id) + '"><span class="th">' +
+    (ssImgs && s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" decoding="async" onerror="this.remove()">' : "") +
+    '</span><span class="meta"><span class="t">' + esc(s.title) + '</span><span class="s">' + esc(sub || "Anime") + '</span></span><span class="go">\u203a</span></a>';
+}
+function drawSSNow() {
+  var inp = document.getElementById("ssin"), box = document.getElementById("ssr");
+  if (!inp || !box) return;
+  if (!allSeries) { box.innerHTML = '<div class="empty" style="padding:28px">Loading...</div>'; return; }
+  var q = inp.value.trim().toLowerCase();
+  var l = allSeries.filter(function (s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; });
+  box.innerHTML = (q ? "" : '<div class="ssl">All series</div>') + (l.length ? l.map(ssRow).join("") : '<div class="empty" style="padding:28px">No results.</div>');
+}
+function drawSS() { cancelAnimationFrame(ssRaf); ssRaf = requestAnimationFrame(drawSSNow); }
+async function openSS(btn) {
+  var el = ssEnsure(), p = el.querySelector(".ssp"), inp = document.getElementById("ssin");
+  var r = btn.getBoundingClientRect();
+  p.style.transformOrigin = (r.left + r.width / 2 - p.offsetLeft) + "px " + (r.top + r.height / 2 - p.offsetTop) + "px";
+  ssImgs = false;
+  drawSSNow();
+  void p.offsetWidth;
+  el.classList.add("show");
+  document.body.style.overflow = "hidden";
+  setTimeout(function () { if (el.classList.contains("show")) inp.focus(); }, 430);
+  setTimeout(function () { if (el.classList.contains("show")) { ssImgs = true; drawSSNow(); } }, 470);
+  try { await loadSeries(); } catch (e) {}
+  drawSSNow();
+}
+function closeSS() {
+  var el = document.getElementById("ss");
+  if (!el || !el.classList.contains("show")) return;
+  var inp = document.getElementById("ssin");
+  inp.blur();
+  el.classList.remove("show");
+  document.body.style.overflow = "";
+  setTimeout(function () { if (!el.classList.contains("show")) { inp.value = ""; ssImgs = false; } }, 450);
 }
 window.addEventListener("hashchange", route);
 route();
