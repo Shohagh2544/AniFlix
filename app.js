@@ -52,9 +52,8 @@ function poster(s) {
     '<div class="pt glass">' + esc(s.title) + "</div></a>";
 }
 function topBar(title, withSearch) {
-  return '<div class="topbar" id="topbar"><div class="logo">' + esc(title || "AniFlix") + '</div>' +
-    (withSearch ? '<div class="tsearch glass"><button class="tsb" id="tsb" aria-label="Search">' + IC.search + '</button><input id="tsi" type="search" placeholder="Search anime..." autocomplete="off"><button class="tsx" id="tsx" aria-label="Close">&#10005;</button></div>' : "") + '</div>' +
-    (withSearch ? '<div class="sres glass" id="sres"></div>' : "");
+  return '<div class="topbar"><div class="logo">' + esc(title || "AniFlix") + '</div>' +
+    (withSearch ? '<button class="avatar glass" id="sbtn" aria-label="Search">' + IC.search + '</button>' : "") + "</div>";
 }
 
 async function homeView() {
@@ -226,48 +225,64 @@ function route() {
   else if (h === "#list") listView();
   else homeView();
 }
-function resRow(s) {
+function ssEnsure() {
+  var el = document.getElementById("ss");
+  if (el) return el;
+  el = document.createElement("div");
+  el.id = "ss";
+  el.className = "ss";
+  el.innerHTML = '<div class="ssb"></div><div class="ssp glass"><div class="ssh"><label class="ssi">' + IC.search +
+    '<input id="ssin" type="search" placeholder="Search anime..." autocomplete="off"></label><button class="ssc" id="ssc">Cancel</button></div><div class="ssr" id="ssr"></div></div>';
+  document.body.appendChild(el);
+  return el;
+}
+function ssRow(s) {
   var sub = [s.year, s.rating ? "\u2605 " + s.rating : "", s.genre].filter(Boolean).join(" \u00b7 ");
   return '<a class="rr" href="#series-' + esc(s.id) + '"><span class="th">' +
     (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" onerror="this.remove()">' : "") +
-    '</span><span class="meta"><span class="t">' + esc(s.title) + '</span><span class="s">' + esc(sub || "Anime") + '</span></span><span class="go">&rsaquo;</span></a>';
+    '</span><span class="meta"><span class="t">' + esc(s.title) + '</span><span class="s">' + esc(sub || "Anime") + '</span></span><span class="go">\u203a</span></a>';
 }
-function drawTS() {
-  var inp = document.getElementById("tsi"), pan = document.getElementById("sres");
-  if (!inp || !pan || !allSeries) return;
+function drawSS() {
+  var inp = document.getElementById("ssin"), box = document.getElementById("ssr");
+  if (!inp || !box) return;
+  if (!allSeries) { box.innerHTML = '<div class="empty" style="padding:28px">Loading...</div>'; return; }
   var q = inp.value.trim().toLowerCase();
-  var l = allSeries.filter(function (s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; }).slice(0, 12);
-  pan.innerHTML = l.length ? l.map(resRow).join("") : '<div class="empty" style="padding:24px">No results.</div>';
+  var l = allSeries.filter(function (s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; });
+  box.innerHTML = (q ? "" : '<div class="ssl">All series</div>') + (l.length ? l.map(ssRow).join("") : '<div class="empty" style="padding:28px">No results.</div>');
 }
-async function openTS() {
-  var bar = document.getElementById("topbar"), inp = document.getElementById("tsi"), pan = document.getElementById("sres");
-  if (!bar || !inp || !pan) return;
-  if (bar.classList.contains("open")) { inp.focus(); return; }
-  window.scrollTo(0, 0);
-  bar.classList.add("open");
-  pan.classList.add("show");
+async function openSS(btn) {
+  var el = ssEnsure(), p = el.querySelector(".ssp"), inp = document.getElementById("ssin");
+  var r = btn.getBoundingClientRect();
+  p.style.transformOrigin = (r.left + r.width / 2 - p.offsetLeft) + "px " + (r.top + r.height / 2 - p.offsetTop) + "px";
+  void p.offsetWidth;
+  el.classList.add("show");
+  document.body.style.overflow = "hidden";
+  drawSS();
   inp.focus();
-  setTimeout(function () { inp.focus(); }, 280);
+  setTimeout(function () { inp.focus(); }, 320);
   try { await loadSeries(); } catch (e) {}
-  drawTS();
+  drawSS();
 }
-function closeTS() {
-  var bar = document.getElementById("topbar"), inp = document.getElementById("tsi"), pan = document.getElementById("sres");
-  if (!bar || !inp || !pan) return;
-  inp.value = "";
+function closeSS() {
+  var el = document.getElementById("ss");
+  if (!el || !el.classList.contains("show")) return;
+  var inp = document.getElementById("ssin");
   inp.blur();
-  bar.classList.remove("open");
-  pan.classList.remove("show");
+  el.classList.remove("show");
+  document.body.style.overflow = "";
+  setTimeout(function () { inp.value = ""; }, 450);
 }
 document.addEventListener("click", function (e) {
   var t = e.target;
   if (!t || !t.closest) return;
-  if (t.closest("#tsx")) { closeTS(); return; }
-  if (t.closest("#tsb")) { openTS(); return; }
-  if (document.querySelector(".topbar.open") && !t.closest(".tsearch") && !t.closest(".sres")) closeTS();
+  var b = t.closest("#sbtn");
+  if (b) { openSS(b); return; }
+  if (t.closest("#ssc") || (t.classList && t.classList.contains("ssb"))) { closeSS(); return; }
+  if (t.closest(".rr")) closeSS();
 });
-document.addEventListener("input", function (e) { if (e.target && e.target.id === "tsi") drawTS(); });
-document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeTS(); });
+document.addEventListener("input", function (e) { if (e.target && e.target.id === "ssin") drawSS(); });
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSS(); });
+window.addEventListener("hashchange", closeSS);
 window.addEventListener("hashchange", route);
 route();
 })();
