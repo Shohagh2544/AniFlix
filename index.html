@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=34">
-<link rel="stylesheet" href="player.css?v=34">
+<link rel="stylesheet" href="style.css?v=36">
+<link rel="stylesheet" href="player.css?v=36">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -168,6 +168,68 @@ html,body{height:100%;min-height:0!important;overflow:hidden!important}
 .backdrop.skel::after{display:none}
 .wbar::after{content:"AniFlix";flex:0 0 auto;margin-left:auto;padding-left:6px;font-size:20px;font-weight:800;letter-spacing:-.7px;color:#fff}
 </style>
+<style id="pc">
+a:focus-visible,button:focus-visible{outline:2px solid #ff4d57;outline-offset:3px}
+@media (min-width:900px){
+#app{left:112px!important;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent}
+#app::-webkit-scrollbar{width:10px}
+#app::-webkit-scrollbar-thumb{background:rgba(255,255,255,.24);border-radius:10px;border:2px solid transparent;background-clip:padding-box}
+#app.wrap{max-width:none!important;margin:0!important;padding:34px max(48px,calc((100% - 1280px) / 2)) 64px!important}
+#app.flush{max-width:none!important;margin:0!important;padding:0 0 72px!important}
+body.watching #app.wrap{padding-left:max(48px,calc((100% - 1100px) / 2))!important;padding-right:max(48px,calc((100% - 1100px) / 2))!important}
+
+.tabbar{left:18px!important;top:50%!important;bottom:auto!important;width:76px!important;height:auto!important;flex-direction:column;gap:4px;padding:8px!important;border-radius:30px!important;transform:translateY(-50%)!important}
+body.watching .tabbar{transform:translateY(-50%)!important;opacity:1!important;pointer-events:auto!important}
+body:has(.topbar.open) .tabbar{opacity:0!important;pointer-events:none!important}
+.tabbar a{flex:none!important;height:64px;padding:0!important;justify-content:center;border-radius:22px!important}
+.pill{top:8px!important;bottom:auto!important;left:8px!important;right:8px!important;width:auto!important;height:calc((100% - 24px) / 3)!important;border-radius:22px!important;transform:translateY(calc(var(--i) * (100% + 4px)))!important}
+
+.logo{font-size:32px}
+.h{font-size:24px;margin:34px 2px 16px}
+.hero{height:min(66vh,540px);border-radius:36px}
+.hc{padding:40px 48px;max-width:780px}
+.hc h1{font-size:48px;letter-spacing:-1px}
+.hc p{font-size:16px;-webkit-line-clamp:3}
+.row{gap:18px;padding-bottom:14px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent}
+.row::-webkit-scrollbar{display:block;height:8px}
+.row::-webkit-scrollbar-thumb{background:rgba(255,255,255,.24);border-radius:8px}
+.row .pc{flex:0 0 190px}
+.grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:20px}
+.pc .pt{font-size:14px}
+.sbar{max-width:640px;height:56px}
+
+.topbar.open .tsw{width:min(100%,560px)!important}
+.topbar.open .logo{opacity:1!important;transform:none!important}
+.tsd{top:0!important}
+.tsres{left:calc(50% + 56px)!important;top:96px!important;width:min(calc(100% - 200px),760px)!important}
+
+.backdrop{height:min(62vh,540px)!important;border-radius:0 0 44px 44px!important}
+.rb{top:28px!important;width:48px;height:48px}
+.rb.l{left:32px!important}
+.rb.r{right:32px!important}
+.backdrop::after{top:52px!important;font-size:26px!important}
+.info{max-width:1040px!important;margin-left:auto!important;margin-right:auto!important;margin-top:-110px!important;padding:0 48px!important}
+.info h1{font-size:52px!important;letter-spacing:-1.2px}
+.info .btn{width:auto!important;min-width:280px;padding:16px 40px}
+.desc{max-width:760px;font-size:16.5px}
+.el{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important;max-height:none!important;overflow:visible!important}
+
+.wbar{margin-bottom:20px}
+.wback{width:48px;height:48px}
+.wtitle .a{font-size:22px}
+.wbar::after{font-size:26px!important}
+.player{border-radius:28px!important}
+.wnav{margin-top:18px}
+
+@media (hover:hover){
+.pc{transition:transform .25s,box-shadow .25s}
+.pc:hover{transform:translateY(-6px) scale(1.025);box-shadow:0 18px 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.25)}
+.er:hover,.rr:hover{background:rgba(255,255,255,.12)}
+.btn:hover,.navb:hover:not(:disabled),.sort:hover{filter:brightness(1.15)}
+.tabbar a:hover{color:#fff}
+}
+}
+</style>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -179,7 +241,7 @@ html,body{height:100%;min-height:0!important;overflow:hidden!important}
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=34"></script>
+<script src="player.js?v=36"></script>
 <script id="nativeplayer">
 (function () {
   window.initPlayers = function (root) {
@@ -200,7 +262,7 @@ html,body{height:100%;min-height:0!important;overflow:hidden!important}
   };
 })();
 </script>
-<script src="app.js?v=34"></script>
+<script src="app.js?v=36"></script>
 <script id="scrollfx">
 (function () {
   var app = document.getElementById("app");
@@ -245,6 +307,30 @@ html,body{height:100%;min-height:0!important;overflow:hidden!important}
   new MutationObserver(function () { mark(); queue(); }).observe(app, { childList: true, subtree: true });
   mark();
   queue();
+})();
+</script>
+<script id="pckeys">
+(function () {
+  if (!window.matchMedia || !matchMedia("(hover: hover)").matches) return;
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    var k = e.key;
+    if (k === "/") {
+      var b = document.getElementById("sbtn");
+      if (!b) return;
+      e.preventDefault();
+      b.click();
+      setTimeout(function () { var i = document.getElementById("ssin"); if (i) { i.readOnly = false; i.focus(); } }, 150);
+    } else if (k === "n" || k === "N") {
+      var nx = document.getElementById("wnext");
+      if (nx && !nx.disabled) nx.click();
+    } else if (k === "p" || k === "P") {
+      var pv = document.getElementById("wprev");
+      if (pv && !pv.disabled) pv.click();
+    }
+  });
 })();
 </script>
 </body>
