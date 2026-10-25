@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=31">
-<link rel="stylesheet" href="player.css?v=31">
+<link rel="stylesheet" href="style.css?v=32">
+<link rel="stylesheet" href="player.css?v=32">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -156,6 +156,13 @@ html,body{height:100%;min-height:0!important;overflow:hidden!important}
 .er.active{animation:rowPop .45s cubic-bezier(.22,.9,.3,1)}
 @media (prefers-reduced-motion:reduce){.swap-f,.swap-b,.er.active{animation:none}}
 </style>
+<style id="listfix">
+.el{overflow-x:hidden!important;padding:8px 2px 16px!important;scrollbar-width:none;-ms-overflow-style:none}
+.el::-webkit-scrollbar{display:none;width:0;height:0}
+.el > .er.rv{transform:none!important}
+@keyframes rowPop{0%{opacity:.55}100%{opacity:1}}
+.er.active{animation:rowPop .35s ease-out!important}
+</style>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -167,7 +174,7 @@ html,body{height:100%;min-height:0!important;overflow:hidden!important}
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=31"></script>
+<script src="player.js?v=32"></script>
 <script id="nativeplayer">
 (function () {
   window.initPlayers = function (root) {
@@ -188,7 +195,7 @@ html,body{height:100%;min-height:0!important;overflow:hidden!important}
   };
 })();
 </script>
-<script src="app.js?v=31"></script>
+<script src="app.js?v=32"></script>
 <script id="scrollfx">
 (function () {
   var app = document.getElementById("app");
