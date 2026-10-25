@@ -68,7 +68,7 @@ async function homeView() {
     (f.cover_url ? '<img src="' + esc(f.cover_url) + '" alt="" decoding="async" onerror="this.remove()">' : "") +
     '<div class="shade"></div><div class="hc"><div class="chips">' + chips(f) + "</div><h1>" + esc(f.title) + "</h1><p>" + esc(f.description) +
     '</p><span class="btn primary">▶ Watch now</span></div></a>' +
-    '<h2 class="h">Recommended for You</h2><div class="row">' + list.map(poster).join("") + "</div>" +
+    '<h2 class="h">Recommended for You</h2><div class="row">' + list.filter(function (s) { return !isMovie(s); }).map(poster).join("") + "</div>" + (list.some(isMovie) ? '<h2 class="h">Movies</h2><div class="row">' + list.filter(isMovie).map(poster).join("") + "</div>" : "") +
     (list.length > 5 ? '<h2 class="h">Browse all</h2><div class="grid">' + list.map(poster).join("") + "</div>" : "");
 }
 
@@ -134,8 +134,8 @@ async function seriesView(id) {
     '<a class="rb l glass" href="#" aria-label="Back">‹</a>' +
     '<button class="rb r glass' + (inList(id) ? " on" : "") + '" id="save" aria-label="My List">' + IC.bm + "</button></div>" +
     '<div class="info"><h1>' + esc(s.title) + '</h1><div class="chips">' +
-    '<span class="chip">' + eps.length + (eps.length === 1 ? " episode" : " episodes") + "</span>" + chips(s) + "</div>" +
-    '<button class="btn primary" id="go">▶ ' + (lastIdx > -1 ? "Continue Watching" : "Start Watching") + "</button>" +
+    '<span class="chip">' + (oneMovie(s, eps) ? "Movie" : eps.length + (eps.length === 1 ? " episode" : " episodes")) + "</span>" + chips(s) + "</div>" +
+    '<button class="btn primary" id="go">▶ ' + (oneMovie(s, eps) ? "Play Movie" : (lastIdx > -1 ? "Continue Watching" : "Start Watching")) + "</button>" +
     (text ? '<p class="desc' + (long ? " clamp" : "") + '" id="desc">' + esc(text) + "</p>" : "") +
     (long ? '<button class="more" id="more">More</button>' : "") +
     '<div id="stage"></div><div id="nav"></div>' +
@@ -144,6 +144,7 @@ async function seriesView(id) {
 
   var stage = document.getElementById("stage"), nav = document.getElementById("nav");
   var listEl = document.getElementById("el"), sortBtn = document.getElementById("sort");
+  if (oneMovie(s, eps)) { var eh = document.querySelector(".eh"); if (eh) eh.style.display = "none"; listEl.style.display = "none"; }
   var cur = -1, newest = false;
 
   document.getElementById("save").addEventListener("click", function () { this.classList.toggle("on", toggleList(id)); });
@@ -326,6 +327,11 @@ async function watchView(sid, eid) {
     '<button class="navb glass" id="wnext"' + (i === eps.length - 1 ? " disabled" : "") + '>Next \u203a</button></div>' +
     '<h2 class="h">Episodes</h2><div class="el" id="wel">' + rows + '</div>';
 
+  if (oneMovie(s, eps)) {
+    var wb = app.querySelector(".wtitle .b"); if (wb) wb.textContent = "Movie";
+    var wn = app.querySelector(".wnav"); if (wn) wn.style.display = "none";
+    var wl = app.querySelector("#wel"); if (wl) { wl.style.display = "none"; if (wl.previousElementSibling) wl.previousElementSibling.style.display = "none"; }
+  }
   if (window.initPlayers) window.initPlayers(app);
   var vid = app.querySelector("video");
   if (vid) vid.addEventListener("ended", function () { if (i < eps.length - 1) go(i + 1); });
@@ -449,6 +455,8 @@ document.addEventListener("click", function (e) {
   var t = e.target;
   if (t && t.classList && t.classList.contains("tsd")) closeSS();
 });
+function isMovie(s) { return String((s && s.kind) || "").toLowerCase() === "movie"; }
+function oneMovie(s, eps) { return isMovie(s) && eps.length <= 1; }
 window.addEventListener("hashchange", route);
 route();
 })();
