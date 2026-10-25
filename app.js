@@ -493,7 +493,7 @@ function rowHead(h, href) {
   var row = w.nextElementSibling;
   if (row && row.classList.contains("row")) while (row.children.length > 10) row.removeChild(row.lastChild);
 }
-async function homeView() {
+async function homeView3() {
   await homeView0();
   var ms = null;
   try { ms = await loadMovies(); } catch (e) {}
@@ -640,7 +640,212 @@ function skeletons(n) {
   for (var i = 0; i < n; i++) h += '<div class="pc skel"></div>';
   return h + "</div>";
 }
-function routeTop() { if (routeAll()) return; route(); }
+var allWeb = null, webCache = {}, webLast = null;
+async function loadWeb() {
+  if (allWeb) return allWeb;
+  var r = await db.from("web_series").select("*").order("id", { ascending: false });
+  if (r.error) throw r.error;
+  allWeb = r.data || [];
+  return allWeb;
+}
+function webPoster(w) {
+  return '<a class="pc" href="#web-' + esc(w.id) + '">' +
+    (w.cover_url ? '<img src="' + esc(w.cover_url) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : "") +
+    (w.rating ? '<span class="rate glass">\u2605 ' + esc(w.rating) + "</span>" : "") +
+    '<div class="pt glass"><span>' + esc(w.title) + "</span></div></a>";
+}
+async function homeView() {
+  await homeView3();
+  var ws;
+  try { ws = await loadWeb(); } catch (e) { return; }
+  if (!ws.length) return;
+  if (location.hash && location.hash !== "#") return;
+  var html = '<h2 class="h">Web Series</h2><div class="row">' + ws.slice(0, 10).map(webPoster).join("") + "</div>";
+  var rows = app.querySelectorAll(".row");
+  if (rows.length) rows[rows.length - 1].insertAdjacentHTML("afterend", html);
+  else app.insertAdjacentHTML("beforeend", html);
+  var hs = app.querySelectorAll("h2.h");
+  for (var i = 0; i < hs.length; i++) if (hs[i].textContent.trim() === "Web Series") rowHead(hs[i], "#all-web");
+}
+async function webView(id) {
+  setTab("home");
+  app.innerHTML = '<div class="backdrop skel"></div>';
+  var rs;
+  try {
+    rs = await Promise.all([
+      db.from("web_series").select("*").eq("id", id).maybeSingle(),
+      db.from("web_episodes").select("*").eq("series_id", id).order("episode_number")
+    ]);
+  } catch (e) { app.innerHTML = err(e); return; }
+  var sr = rs[0], er = rs[1];
+  if (sr.error || er.error) { app.innerHTML = err(sr.error || er.error); return; }
+  var s = sr.data, eps = er.data || [];
+  if (!s) { app.innerHTML = '<div class="empty">Web series not found.</div>'; return; }
+  document.title = s.title + " \u00b7 AniFlix";
+  var last = null;
+  try { last = localStorage.getItem("aniflix-wlast-" + id); } catch (e) {}
+  var lastIdx = -1;
+  eps.forEach(function (x, i) { if (String(x.id) === last) lastIdx = i; });
+  var text = s.description || "", long = text.length > 120;
+  function num(x, k) { return x.episode_number != null ? x.episode_number : k + 1; }
+  var rows = eps.map(function (x, k) {
+    var n = num(x, k);
+    return '<button class="er glass" data-i="' + k + '"><span class="num">' + esc(n) + '</span><span class="meta"><span class="t">' + esc(x.title || ("Episode " + n)) + '</span><span class="s">' + (k === lastIdx ? "Continue watching" : "Episode " + esc(n)) + '</span></span><span class="go">\u25b6</span></button>';
+  }).join("");
+  app.innerHTML =
+    '<div class="backdrop">' + (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" decoding="async" onerror="this.remove()">' : "") + '<div class="shade"></div>' +
+    '<a class="rb l glass" href="#" aria-label="Back">\u2039</a></div>' +
+    '<div class="info"><h1>' + esc(s.title) + '</h1><div class="chips"><span class="chip">Web Series</span><span class="chip">' + eps.length + (eps.length === 1 ? " episode" : " episodes") + '</span>' + chips(s) + '</div>' +
+    '<button class="btn primary" id="go">\u25b6 ' + (lastIdx > -1 ? "Continue Watching" : "Start Watching") + '</button>' +
+    (text ? '<p class="desc' + (long ? " clamp" : "") + '" id="desc">' + esc(text) + '</p>' : "") +
+    (long ? '<button class="more" id="more">More</button>' : "") +
+    '<div class="eh"><h2 class="h">Episodes</h2></div><div class="el" id="el">' + (rows || '<div class="empty" style="padding:16px 0">No episodes yet.</div>') + '</div></div>';
+  var more = document.getElementById("more");
+  if (more) more.addEventListener("click", function () {
+    var d = document.getElementById("desc");
+    d.classList.toggle("clamp");
+    more.textContent = d.classList.contains("clamp") ? "More" : "Less";
+  });
+  function openEp(k) { location.hash = "#webwatch-" + id + "-" + eps[k].id; }
+  document.getElementById("go").addEventListener("click", function () { if (eps.length) openEp(lastIdx > -1 ? lastIdx : 0); });
+  document.getElementById("el").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".er") : null;
+    if (b) openEp(Number(b.getAttribute("data-i")));
+  });
+}
+async function webWatchView(sid, eid) {
+  setTab("home");
+  var same = !!(webLast && webLast.sid === sid);
+  var cached = webCache[sid];
+  if (!cached) {
+    document.title = "Watching \u00b7 AniFlix";
+    app.innerHTML = '<div class="wbar"><a class="wback glass" href="#web-' + sid + '" aria-label="Back">\u2039</a></div><div class="player skel"></div>';
+    var rs;
+    try {
+      rs = await Promise.all([
+        db.from("web_series").select("*").eq("id", sid).maybeSingle(),
+        db.from("web_episodes").select("*").eq("series_id", sid).order("episode_number")
+      ]);
+    } catch (e) { app.innerHTML = err(e); return; }
+    var sr = rs[0], er = rs[1];
+    if (sr.error || er.error) { app.innerHTML = err(sr.error || er.error); return; }
+    if (!sr.data) { app.innerHTML = '<div class="empty">Web series not found.</div>'; return; }
+    cached = webCache[sid] = { s: sr.data, eps: er.data || [] };
+  }
+  var s = cached.s, eps = cached.eps, i = -1;
+  eps.forEach(function (x, k) { if (Number(x.id) === eid) i = k; });
+  if (i < 0) { app.innerHTML = '<div class="empty">Episode not found.</div>'; return; }
+  var ep = eps[i], dir = 0;
+  if (same && webLast.i !== i) dir = i > webLast.i ? 1 : -1;
+  webLast = { sid: sid, i: i };
+  try { localStorage.setItem("aniflix-wlast-" + sid, String(ep.id)); } catch (e) {}
+  document.title = (s.title || "") + " \u00b7 AniFlix";
+  function num(x, k) { return x.episode_number != null ? x.episode_number : k + 1; }
+  function go(k) { location.replace("#webwatch-" + sid + "-" + eps[k].id); }
+  var v = videoInfo(ep), player;
+  if (!v) player = '<div class="empty">No video yet.</div>';
+  else if (v.kind === "video" && window.initPlayers) player = '<div class="vp" data-src="' + esc(v.src) + '"></div>';
+  else if (v.kind === "video") player = '<video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video>';
+  else player = '<iframe src="' + esc(v.src) + '" ' + (/abyss/i.test(v.src) ? 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ' : '') + 'allowfullscreen allow="autoplay; fullscreen"></iframe>';
+  var rows = eps.map(function (x, k) {
+    var n = num(x, k), active = k === i;
+    return '<button class="er glass' + (active ? " active" : "") + '" data-i="' + k + '"><span class="num">' + esc(n) + '</span>' +
+      '<span class="meta"><span class="t">' + esc(x.title || ("Episode " + n)) + '</span><span class="s">' + (active ? "Now playing" : "Episode " + esc(n)) + '</span></span>' +
+      '<span class="go">' + (active ? "\u275a\u275a" : "\u25b6") + '</span></button>';
+  }).join("");
+  var sw = dir === 0 ? "" : (dir > 0 ? " swap-f" : " swap-b");
+  app.innerHTML =
+    '<div class="wbar"><a class="wback glass" href="#web-' + sid + '" aria-label="Back">\u2039</a><div class="wtitle' + sw + '"><span class="a" style="white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25">' + esc(s.title) + '</span><span class="b">Episode ' + esc(num(ep, i)) + '</span></div></div>' +
+    '<div class="player' + sw + ' swap-d1">' + player + '</div>' +
+    '<div class="navrow wnav' + sw + ' swap-d2"><button class="navb glass" id="wprev"' + (i === 0 ? " disabled" : "") + '>\u2039 Prev</button>' +
+    '<div class="mid"><span class="t">' + esc(ep.title || ("Episode " + num(ep, i))) + '</span></div>' +
+    '<button class="navb glass" id="wnext"' + (i === eps.length - 1 ? " disabled" : "") + '>Next \u203a</button></div>' +
+    '<h2 class="h">Episodes</h2><div class="el" id="wel">' + rows + '</div>';
+  if (window.initPlayers) window.initPlayers(app);
+  var vid = app.querySelector("video");
+  if (vid) vid.addEventListener("ended", function () { if (i < eps.length - 1) go(i + 1); });
+  document.getElementById("wprev").addEventListener("click", function () { if (i > 0) go(i - 1); });
+  document.getElementById("wnext").addEventListener("click", function () { if (i < eps.length - 1) go(i + 1); });
+  document.getElementById("wel").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".er") : null;
+    if (!b) return;
+    var k = Number(b.getAttribute("data-i"));
+    if (k !== i) go(k);
+  });
+}
+async function webAllView() {
+  setTab("home");
+  document.title = "Web Series \u00b7 AniFlix";
+  var head = '<div class="wbar"><a class="wback glass" href="#" aria-label="Back">\u2039</a><div class="wtitle"><span class="a">Web Series</span><span class="b" id="cnt">&nbsp;</span></div></div>';
+  app.innerHTML = head + skeletons(8);
+  var list;
+  try { list = await loadWeb(); } catch (e) { app.innerHTML = head + err(e); return; }
+  if (location.hash !== "#all-web") return;
+  app.innerHTML = head + '<label class="sbar glass">' + IC.search + '<input id="allq" type="search" placeholder="Search web series..." autocomplete="off"></label><div id="allg"></div>';
+  var cnt = document.getElementById("cnt"), box = document.getElementById("allg"), q = document.getElementById("allq");
+  function draw() {
+    var t = q.value.trim().toLowerCase();
+    var l = list.filter(function (s) { return (s.title || "").toLowerCase().indexOf(t) !== -1; });
+    cnt.textContent = l.length + (l.length === 1 ? " title" : " titles");
+    box.innerHTML = l.length ? '<div class="grid" style="margin-top:14px">' + l.map(webPoster).join("") + "</div>" : '<div class="empty">No results.</div>';
+  }
+  q.addEventListener("input", draw);
+  draw();
+}
+function routeWeb() {
+  var h = location.hash, m = h.match(/^#web-(\d+)$/), w = h.match(/^#webwatch-(\d+)-(\d+)$/), al = h === "#all-web";
+  if (!m && !w && !al) return false;
+  document.body.classList.toggle("watching", !!w);
+  if (!w) webLast = null;
+  if (typeof lastWatch !== "undefined") lastWatch = null;
+  app.scrollTop = 0;
+  app.className = m ? "flush" : "wrap";
+  void app.offsetWidth;
+  app.className += m ? " enter-u" : " enter-r";
+  var tabs = document.getElementById("tabs");
+  if (tabs) tabs.style.setProperty("--i", "0");
+  var fail = function (e) { app.innerHTML = err(e); };
+  if (m) webView(Number(m[1])).catch(fail);
+  else if (w) webWatchView(Number(w[1]), Number(w[2])).catch(fail);
+  else webAllView().catch(fail);
+  return true;
+}
+function poster(s) {
+  var p = s._movie ? "movie" : (s._web ? "web" : "series");
+  return '<a class="pc" href="#' + p + '-' + esc(s.id) + '">' +
+    (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : "") +
+    (s.rating ? '<span class="rate glass">\u2605 ' + esc(s.rating) + "</span>" : "") +
+    '<div class="pt glass"><span>' + esc(s.title) + "</span></div></a>";
+}
+function ssMerge(list) {
+  var out = (list || []).slice();
+  (allMovies || []).forEach(function (m) { var c = {}; for (var k in m) c[k] = m[k]; c._movie = true; out.push(c); });
+  (allWeb || []).forEach(function (m) { var c = {}; for (var k in m) c[k] = m[k]; c._web = true; out.push(c); });
+  return out;
+}
+function ssRow(s) {
+  var tag = s._movie ? "Movie" : (s._web ? "Web Series" : "");
+  var p = s._movie ? "movie" : (s._web ? "web" : "series");
+  var sub = [tag, s.year, s.rating ? "\u2605 " + s.rating : "", s.genre].filter(Boolean).join(" \u00b7 ");
+  var withImg = typeof ssImgs === "undefined" || ssImgs;
+  return '<a class="rr" href="#' + p + '-' + esc(s.id) + '"><span class="th">' +
+    (withImg && s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" decoding="async" onerror="this.remove()">' : "") +
+    '</span><span class="meta"><span class="t">' + esc(s.title) + '</span><span class="s">' + esc(sub || "Anime") + '</span></span><span class="go">\u203a</span></a>';
+}
+var ssExtraTried = false;
+function drawSSNow() {
+  var inp = document.getElementById("ssin"), box = document.getElementById("ssr");
+  if (!inp || !box) return;
+  if (!ssExtraTried) {
+    ssExtraTried = true;
+    Promise.all([loadMovies().catch(function () {}), loadWeb().catch(function () {})]).then(drawSSNow);
+  }
+  if (!allSeries) { box.innerHTML = '<div class="empty" style="padding:28px">Loading...</div>'; return; }
+  var q = inp.value.trim().toLowerCase();
+  var l = ssMerge(allSeries).filter(function (s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; });
+  box.innerHTML = (q ? "" : '<div class="ssl">All series, movies &amp; web series</div>') + (l.length ? l.map(ssRow).join("") : '<div class="empty" style="padding:28px">No results.</div>');
+}
+function routeTop() { if (routeAll()) return; if (routeWeb()) return; route(); }
 window.addEventListener("hashchange", routeTop);
 routeTop();
 })();
