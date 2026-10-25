@@ -56,7 +56,7 @@ function topBar(title, withSearch) {
     (withSearch ? '<div class="tsw" id="tsw"><button class="tsb" id="sbtn" aria-label="Search">' + IC.search + '</button><input id="ssin" readonly type="search" placeholder="Search anime..." autocomplete="off"><button class="tsx" id="ssc" aria-label="Close">&#10005;</button></div>' : "") + "</div>";
 }
 
-async function homeView() {
+async function homeView0() {
   setTab("home"); document.title = "AniFlix";
   app.innerHTML = topBar("", true) + '<div class="hero skel"></div>';
   var list;
@@ -345,7 +345,7 @@ async function watchView(sid, eid) {
   });
 }
 
-function route() {
+function route1() {
   var w = location.hash.match(/^#watch-(\d+)-(\d+)$/);
   document.body.classList.toggle("watching", !!w);
   if (!w) { route0(); return; }
@@ -457,6 +457,87 @@ document.addEventListener("click", function (e) {
 });
 function isMovie(s) { return String((s && s.kind) || "").toLowerCase() === "movie"; }
 function oneMovie(s, eps) { return isMovie(s) && eps.length <= 1; }
+var allMovies = null;
+async function loadMovies() {
+  if (allMovies) return allMovies;
+  var r = await db.from("movies").select("*").order("id", { ascending: false });
+  if (r.error) throw r.error;
+  allMovies = r.data || [];
+  return allMovies;
+}
+function moviePoster(m) {
+  return '<a class="pc" href="#movie-' + esc(m.id) + '">' +
+    (m.cover_url ? '<img src="' + esc(m.cover_url) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : "") +
+    (m.rating ? '<span class="rate glass">\u2605 ' + esc(m.rating) + "</span>" : "") +
+    '<div class="pt glass">' + esc(m.title) + "</div></a>";
+}
+async function homeView() {
+  await homeView0();
+  var ms;
+  try { ms = await loadMovies(); } catch (e) { return; }
+  if (!ms.length) return;
+  if (location.hash && location.hash !== "#") return;
+  var html = '<h2 class="h">Movies</h2><div class="row">' + ms.map(moviePoster).join("") + "</div>";
+  var row = app.querySelector(".row");
+  if (row) row.insertAdjacentHTML("afterend", html);
+  else app.insertAdjacentHTML("beforeend", html);
+}
+async function movieView(id) {
+  setTab("home");
+  app.innerHTML = '<div class="backdrop skel"></div>';
+  var r;
+  try { r = await db.from("movies").select("*").eq("id", id).maybeSingle(); } catch (e) { app.innerHTML = err(e); return; }
+  if (r.error) { app.innerHTML = err(r.error); return; }
+  var m = r.data;
+  if (!m) { app.innerHTML = '<div class="empty">Movie not found.</div>'; return; }
+  document.title = m.title + " · AniFlix";
+  var text = m.description || "", long = text.length > 120;
+  app.innerHTML =
+    '<div class="backdrop">' + (m.cover_url ? '<img src="' + esc(m.cover_url) + '" alt="" decoding="async" onerror="this.remove()">' : "") + '<div class="shade"></div>' +
+    '<a class="rb l glass" href="#" aria-label="Back">\u2039</a></div>' +
+    '<div class="info"><h1>' + esc(m.title) + '</h1><div class="chips"><span class="chip">Movie</span>' + chips(m) + '</div>' +
+    '<a class="btn primary" href="#playmovie-' + esc(m.id) + '">\u25b6 Play Movie</a>' +
+    (text ? '<p class="desc' + (long ? " clamp" : "") + '" id="desc">' + esc(text) + '</p>' : "") +
+    (long ? '<button class="more" id="more">More</button>' : "") + '</div>';
+  var more = document.getElementById("more");
+  if (more) more.addEventListener("click", function () {
+    var d = document.getElementById("desc");
+    d.classList.toggle("clamp");
+    more.textContent = d.classList.contains("clamp") ? "More" : "Less";
+  });
+}
+async function playMovieView(id) {
+  setTab("home");
+  document.title = "Watching · AniFlix";
+  app.innerHTML = '<div class="wbar"><a class="wback glass" href="#movie-' + id + '" aria-label="Back">\u2039</a></div><div class="player skel"></div>';
+  var r;
+  try { r = await db.from("movies").select("*").eq("id", id).maybeSingle(); } catch (e) { app.innerHTML = err(e); return; }
+  if (r.error || !r.data) { app.innerHTML = err(r.error || "Movie not found."); return; }
+  var m = r.data;
+  document.title = m.title + " · AniFlix";
+  var v = videoInfo(m), player;
+  if (!v) player = '<div class="empty">No video yet.</div>';
+  else if (v.kind === "video" && window.initPlayers) player = '<div class="vp" data-src="' + esc(v.src) + '"></div>';
+  else if (v.kind === "video") player = '<video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video>';
+  else player = '<iframe src="' + esc(v.src) + '" ' + (/abyss/i.test(v.src) ? 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ' : '') + 'allowfullscreen allow="autoplay; fullscreen"></iframe>';
+  app.innerHTML =
+    '<div class="wbar"><a class="wback glass" href="#movie-' + esc(m.id) + '" aria-label="Back"><span>\u2039</span></a><div class="wtitle"><span class="a">' + esc(m.title) + '</span><span class="b">Movie</span></div></div>' +
+    '<div class="player">' + player + '</div>' +
+    (m.description ? '<p class="desc" style="margin-top:16px">' + esc(m.description) + '</p>' : "");
+  if (window.initPlayers) window.initPlayers(app);
+}
+function route() {
+  var h = location.hash, mm = h.match(/^#movie-(\d+)$/), pm = h.match(/^#playmovie-(\d+)$/);
+  if (!mm && !pm) { route1(); return; }
+  document.body.classList.toggle("watching", !!pm);
+  window.scrollTo(0, 0);
+  app.className = mm ? "flush" : "wrap";
+  void app.offsetWidth;
+  app.className += mm ? " enter-u" : " enter-r";
+  var tabs = document.getElementById("tabs");
+  if (tabs) tabs.style.setProperty("--i", "0");
+  if (mm) movieView(Number(mm[1])); else playMovieView(Number(pm[1]));
+}
 window.addEventListener("hashchange", route);
 route();
 })();
