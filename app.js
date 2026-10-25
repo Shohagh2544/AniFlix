@@ -52,8 +52,8 @@ function poster(s) {
     '<div class="pt glass">' + esc(s.title) + "</div></a>";
 }
 function topBar(title, withSearch) {
-  return '<div class="topbar"><div class="logo">' + esc(title || "AniFlix") + '</div>' +
-    (withSearch ? '<button class="avatar glass" id="sbtn" aria-label="Search">' + IC.search + '</button>' : "") + "</div>";
+  return '<div class="topbar" id="topbar"><div class="logo">' + esc(title || "AniFlix") + '</div>' +
+    (withSearch ? '<div class="tsw" id="tsw"><button class="tsb" id="sbtn" aria-label="Search">' + IC.search + '</button><input id="ssin" readonly type="search" placeholder="Search anime..." autocomplete="off"><button class="tsx" id="ssc" aria-label="Close">&#10005;</button></div>' : "") + "</div>";
 }
 
 async function homeView() {
@@ -396,6 +396,58 @@ document.addEventListener("pointerdown", function (e) {
 document.addEventListener("focusout", function (e) {
   var t = e.target;
   if (t && (t.id === "q" || t.id === "ssin")) t.readOnly = true;
+});
+function ssBarMarker() {}
+function ssEnsure() {
+  var d = document.getElementById("ssres");
+  if (d) return d;
+  var bd = document.createElement("div");
+  bd.id = "ssbd";
+  bd.className = "tsd";
+  document.body.appendChild(bd);
+  d = document.createElement("div");
+  d.id = "ssres";
+  d.className = "tsres";
+  d.innerHTML = '<div class="ssr" id="ssr"></div>';
+  document.body.appendChild(d);
+  return d;
+}
+async function openSS(btn) {
+  var bar = document.getElementById("topbar"), inp = document.getElementById("ssin");
+  if (!bar || !inp) return;
+  if (bar.classList.contains("open")) { inp.readOnly = false; inp.focus(); return; }
+  var res = ssEnsure(), bd = document.getElementById("ssbd");
+  window.scrollTo(0, 0);
+  ssImgs = false;
+  drawSSNow();
+  document.body.style.overflow = "hidden";
+  bar.classList.add("open");
+  bd.classList.add("show");
+  res.classList.add("show");
+  setTimeout(function () { if (bar.classList.contains("open")) { ssImgs = true; drawSSNow(); } }, 420);
+  try { await loadSeries(); } catch (e) {}
+  drawSSNow();
+}
+function closeSS() {
+  var bar = document.getElementById("topbar"), res = document.getElementById("ssres");
+  var bd = document.getElementById("ssbd"), inp = document.getElementById("ssin");
+  if (inp) inp.blur();
+  if (bar) bar.classList.remove("open");
+  if (res) res.classList.remove("show");
+  if (bd) bd.classList.remove("show");
+  document.body.style.overflow = "";
+  setTimeout(function () {
+    var b = document.getElementById("topbar");
+    if (!b || !b.classList.contains("open")) {
+      var i = document.getElementById("ssin");
+      if (i) { i.value = ""; i.readOnly = true; }
+      ssImgs = false;
+    }
+  }, 420);
+}
+document.addEventListener("click", function (e) {
+  var t = e.target;
+  if (t && t.classList && t.classList.contains("tsd")) closeSS();
 });
 window.addEventListener("hashchange", route);
 route();
