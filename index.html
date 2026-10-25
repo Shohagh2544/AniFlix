@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=5">
-<link rel="stylesheet" href="player.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="player.css?v=6">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -15,20 +15,19 @@ window.onerror = function (m, u, l) {
 };
 </script>
 <style id="redtheme">
-:root{--red:#e50914;--redl:#ff4d57}
-body,.bg{background:#050505!important}
-.bg i:nth-child(1){background:#e50914!important}
-.bg i:nth-child(2){background:#7a0010!important}
-.bg i:nth-child(3){background:#ff2d55!important;opacity:.35!important}
-.logo{background:linear-gradient(90deg,#ff6b73,#e50914)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
-.hero,.pc,.backdrop{background:linear-gradient(160deg,#5a0010,#1a0004)!important}
+body,.bg{background:#000!important}
+.bg i{background:#fff!important;opacity:.05!important}
+.logo{background:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.hero,.pc,.backdrop{background:linear-gradient(160deg,#1c1c1e,#0a0a0a)!important}
 .shade{background:linear-gradient(180deg,rgba(0,0,0,.1) 30%,rgba(0,0,0,.92))!important}
-.backdrop .shade{background:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.15) 40%,rgba(5,5,5,.97))!important}
-.btn.primary{background:linear-gradient(135deg,rgba(255,70,80,.96),rgba(190,10,30,.96))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 10px 28px rgba(229,9,20,.5)!important}
-.tabbar a.on{background:rgba(229,9,20,.4)!important}
-.er.active{border-color:rgba(255,90,100,.8)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 0 1px rgba(255,90,100,.4),0 10px 30px rgba(229,9,20,.35)!important}
-.er.active .num{background:linear-gradient(135deg,rgba(255,70,80,.96),rgba(190,10,30,.96))!important}
-.er.active .s,.more,.navrow .mid a{color:#ff4d57!important}
+.backdrop .shade{background:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.1) 40%,#000)!important}
+.info{position:relative!important;z-index:2!important;margin-top:-72px!important}
+.info h1{margin:0 0 10px!important}
+.btn.primary{background:linear-gradient(135deg,#ff3b47,#c1121f)!important;border-color:rgba(255,255,255,.3)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 10px 28px rgba(229,9,20,.45)!important}
+.tabbar a.on{background:rgba(229,9,20,.85)!important;color:#fff!important}
+.er.active{border-color:rgba(255,255,255,.5)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 10px 30px rgba(0,0,0,.6)!important}
+.er.active .num{background:linear-gradient(135deg,#ff3b47,#c1121f)!important}
+.er.active .s,.more,.navrow .mid a{color:#fff!important}
 </style>
 </head>
 <body>
@@ -41,7 +40,7 @@ body,.bg{background:#050505!important}
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=5"></script>
-<script src="app.js?v=5"></script>
+<script src="player.js?v=6"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>
