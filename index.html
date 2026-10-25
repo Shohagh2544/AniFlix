@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=8">
-<link rel="stylesheet" href="player.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="player.css?v=9">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -49,6 +49,30 @@ body,.bg{background:#000!important}
 #app>*:nth-child(4){animation-delay:.12s}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 </style>
+<style id="tsearch">
+.topbar{position:relative!important;height:44px}
+.topbar .logo{transition:opacity .3s,transform .45s cubic-bezier(.22,.9,.3,1)}
+.topbar.open .logo{opacity:0;transform:translateX(-14px);pointer-events:none}
+.tsearch{position:absolute!important;right:0;top:0;height:44px;width:44px;border-radius:999px;display:flex;align-items:center;overflow:hidden;transition:width .5s cubic-bezier(.22,.9,.3,1)}
+.topbar.open .tsearch{width:100%}
+.tsb,.tsx{flex:0 0 44px;width:44px;height:44px;background:none;border:0;padding:0;display:grid;place-items:center;color:#fff}
+.tsx{font-size:16px;opacity:0;transform:scale(.6);transition:opacity .25s .1s,transform .3s .1s}
+.topbar.open .tsx{opacity:1;transform:none}
+.tsearch input{flex:1;min-width:0;height:44px;background:none;border:0;outline:0;color:#fff;font-size:16px;opacity:0;transition:opacity .25s .12s}
+.topbar.open .tsearch input{opacity:1}
+.tsearch input::placeholder{color:rgba(255,255,255,.55)}
+.sres{position:fixed!important;left:50%;top:calc(env(safe-area-inset-top,0px) + 68px);width:min(calc(100% - 32px),688px);max-height:62vh;overflow-y:auto;z-index:30;border-radius:26px;padding:8px;opacity:0;pointer-events:none;transform:translate(-50%,-12px) scale(.97);transform-origin:top center;transition:opacity .3s,transform .4s cubic-bezier(.22,.9,.3,1)}
+.sres.show{opacity:1;pointer-events:auto;transform:translate(-50%,0) scale(1)}
+#app>.sres{animation:none!important}
+.rr{display:flex;align-items:center;gap:12px;padding:8px;border-radius:18px;transition:background .2s}
+.rr:active{background:rgba(255,255,255,.1)}
+.rr .th{flex:0 0 44px;height:64px;border-radius:12px;overflow:hidden;background:linear-gradient(160deg,#1c1c1e,#0a0a0a)}
+.rr .th img{width:100%;height:100%;object-fit:cover;display:block}
+.rr .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rr .t{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rr .s{font-size:12px;color:rgba(255,255,255,.6)}
+.rr .go{color:rgba(255,255,255,.5);font-size:22px}
+</style>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -60,7 +84,7 @@ body,.bg{background:#000!important}
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=8"></script>
-<script src="app.js?v=8"></script>
+<script src="player.js?v=9"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
