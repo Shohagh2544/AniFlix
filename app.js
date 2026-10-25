@@ -635,6 +635,7 @@ function drawSSNow() {
   var l = ssMerge(allSeries).filter(function (s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; });
   box.innerHTML = (q ? "" : '<div class="ssl">All series &amp; movies</div>') + (l.length ? l.map(ssRow).join("") : '<div class="empty" style="padding:28px">No results.</div>');
 }
-window.addEventListener("hashchange", route);
-route();
+function routeTop() { if (routeAll()) return; route(); }
+window.addEventListener("hashchange", routeTop);
+routeTop();
 })();
