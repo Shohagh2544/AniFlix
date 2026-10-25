@@ -179,7 +179,7 @@ async function seriesView(id) {
     if (!v) player = '<div class="empty">No video yet.</div>';
     else if (v.kind === "video" && window.initPlayers) player = '<div class="vp" data-src="' + esc(v.src) + '"></div>';
     else if (v.kind === "video") player = '<video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video>';
-    else player = '<iframe src="' + esc(v.src) + '" ' + '' + 'allowfullscreen allow="autoplay; fullscreen"></iframe>';
+    else player = '<iframe src="' + esc(v.src) + '" ' + (/abyss/i.test(v.src) ? 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ' : '') + 'allowfullscreen allow="autoplay; fullscreen"></iframe>';
     stage.innerHTML = '<div class="player">' + player + "</div>";
     if (window.initPlayers) window.initPlayers(stage);
 
@@ -311,7 +311,7 @@ async function watchView(sid, eid) {
   if (!v) player = '<div class="empty">No video yet.</div>';
   else if (v.kind === "video" && window.initPlayers) player = '<div class="vp" data-src="' + esc(v.src) + '"></div>';
   else if (v.kind === "video") player = '<video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video>';
-  else player = '<iframe src="' + esc(v.src) + '" ' + '' + 'allowfullscreen allow="autoplay; fullscreen"></iframe>';
+  else player = '<iframe src="' + esc(v.src) + '" ' + (/abyss/i.test(v.src) ? 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ' : '') + 'allowfullscreen allow="autoplay; fullscreen"></iframe>';
 
   var rows = eps.map(function (x, k) {
     var n = num(x, k), active = k === i;
@@ -520,7 +520,7 @@ async function playMovieView(id) {
   if (!v) player = '<div class="empty">No video yet.</div>';
   else if (v.kind === "video" && window.initPlayers) player = '<div class="vp" data-src="' + esc(v.src) + '"></div>';
   else if (v.kind === "video") player = '<video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video>';
-  else player = '<iframe src="' + esc(v.src) + '" ' + '' + 'allowfullscreen allow="autoplay; fullscreen"></iframe>';
+  else player = '<iframe src="' + esc(v.src) + '" ' + (/abyss/i.test(v.src) ? 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ' : '') + 'allowfullscreen allow="autoplay; fullscreen"></iframe>';
   app.innerHTML =
     '<div class="wbar"><a class="wback glass" href="#movie-' + esc(m.id) + '" aria-label="Back"><span>\u2039</span></a><div class="wtitle"><span class="a">' + esc(m.title) + '</span><span class="b">Movie</span></div></div>' +
     '<div class="player">' + player + '</div>' +
