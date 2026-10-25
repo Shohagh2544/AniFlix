@@ -46,7 +46,7 @@ function chips(s) {
   return out.map(function (x) { return '<span class="chip">' + esc(x) + "</span>"; }).join("");
 }
 function poster(s) {
-  return '<a class="pc" href="#series-' + esc(s.id) + '">' +
+  return '<a class="pc" href="#' + (s._movie ? "movie" : "series") + '-' + esc(s.id) + '">' +
     (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" decoding="async" loading="lazy" onerror="this.remove()">' : "") +
     (s.rating ? '<span class="rate glass">★ ' + esc(s.rating) + "</span>" : "") +
     '<div class="pt glass"><span>' + esc(s.title) + "</span></div></a>";
@@ -77,13 +77,14 @@ async function searchView() {
   app.innerHTML = topBar("Search") + '<div class="empty">Loading...</div>';
   var list;
   try { list = await loadSeries(); } catch (e) { app.innerHTML = topBar("Search") + err(e); return; }
+  try { await loadMovies(); } catch (e) {}
   app.innerHTML = topBar("Search") + '<label class="sbar glass">' + IC.search +
     '<input id="q" readonly type="search" placeholder="Search anime..." autocomplete="off"></label><div id="res"></div>';
   var q = document.getElementById("q"), res = document.getElementById("res");
   function draw() {
     var t = q.value.trim().toLowerCase();
-    var l = list.filter(function (s) { return (s.title || "").toLowerCase().indexOf(t) !== -1; });
-    res.innerHTML = l.length ? '<h2 class="h">' + (t ? "Results" : "All series") + '</h2><div class="grid">' + l.map(poster).join("") + "</div>" : '<div class="empty">No results.</div>';
+    var l = ssMerge(list).filter(function (s) { return (s.title || "").toLowerCase().indexOf(t) !== -1; });
+    res.innerHTML = l.length ? '<h2 class="h">' + (t ? "Results" : "All series &amp; movies") + '</h2><div class="grid">' + l.map(poster).join("") + "</div>" : '<div class="empty">No results.</div>';
   }
   q.addEventListener("input", draw);
   draw();
@@ -537,6 +538,36 @@ function route() {
   var tabs = document.getElementById("tabs");
   if (tabs) tabs.style.setProperty("--i", "0");
   if (mm) movieView(Number(mm[1])); else playMovieView(Number(pm[1]));
+}
+function ssMerge(list) {
+  var out = (list || []).slice();
+  (allMovies || []).forEach(function (m) {
+    var c = {};
+    for (var k in m) c[k] = m[k];
+    c._movie = true;
+    out.push(c);
+  });
+  return out;
+}
+function ssRow(s) {
+  var sub = [s._movie ? "Movie" : "", s.year, s.rating ? "\u2605 " + s.rating : "", s.genre].filter(Boolean).join(" \u00b7 ");
+  var withImg = typeof ssImgs === "undefined" || ssImgs;
+  return '<a class="rr" href="#' + (s._movie ? "movie" : "series") + '-' + esc(s.id) + '"><span class="th">' +
+    (withImg && s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" decoding="async" onerror="this.remove()">' : "") +
+    '</span><span class="meta"><span class="t">' + esc(s.title) + '</span><span class="s">' + esc(sub || "Anime") + '</span></span><span class="go">\u203a</span></a>';
+}
+var ssMoviesTried = false;
+function drawSSNow() {
+  var inp = document.getElementById("ssin"), box = document.getElementById("ssr");
+  if (!inp || !box) return;
+  if (!ssMoviesTried && !allMovies) {
+    ssMoviesTried = true;
+    loadMovies().then(drawSSNow, drawSSNow);
+  }
+  if (!allSeries) { box.innerHTML = '<div class="empty" style="padding:28px">Loading...</div>'; return; }
+  var q = inp.value.trim().toLowerCase();
+  var l = ssMerge(allSeries).filter(function (s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; });
+  box.innerHTML = (q ? "" : '<div class="ssl">All series &amp; movies</div>') + (l.length ? l.map(ssRow).join("") : '<div class="empty" style="padding:28px">No results.</div>');
 }
 window.addEventListener("hashchange", route);
 route();
