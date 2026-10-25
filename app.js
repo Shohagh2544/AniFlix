@@ -543,7 +543,7 @@ function routeAll() {
     app.scrollTop = 0;
     var tabs = document.getElementById("tabs");
     if (tabs) tabs.style.setProperty("--i", "0");
-    allView(h === "#all-movies" ? "movies" : "anime");
+    allView(h === "#all-movies" ? "movies" : "anime").catch(function (e) { app.innerHTML = err(e); });
     return true;
   }
   return false;
@@ -634,6 +634,11 @@ function drawSSNow() {
   var q = inp.value.trim().toLowerCase();
   var l = ssMerge(allSeries).filter(function (s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; });
   box.innerHTML = (q ? "" : '<div class="ssl">All series &amp; movies</div>') + (l.length ? l.map(ssRow).join("") : '<div class="empty" style="padding:28px">No results.</div>');
+}
+function skeletons(n) {
+  var h = '<div class="grid">';
+  for (var i = 0; i < n; i++) h += '<div class="pc skel"></div>';
+  return h + "</div>";
 }
 function routeTop() { if (routeAll()) return; route(); }
 window.addEventListener("hashchange", routeTop);
