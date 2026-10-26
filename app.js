@@ -888,6 +888,20 @@ async function listView() {
   if (location.hash !== "#list") return;
   app.innerHTML = head + (items.length ? '<div class="grid">' + items.map(poster).join("") + "</div>" : '<div class="empty">Tap the bookmark on any title to save it here.</div>');
 }
+function rowHead(h, href) {
+  if (!h || h.getAttribute("data-rh")) return;
+  h.setAttribute("data-rh", "1");
+  var row = h.nextElementSibling;
+  if (!row || !row.classList.contains("row")) return;
+  var MAX = 8;
+  while (row.children.length > MAX) row.removeChild(row.lastChild);
+  var a = document.createElement("a");
+  a.className = "mt";
+  a.href = href;
+  a.setAttribute("aria-label", "View all");
+  a.innerHTML = '<span class="mc"><svg class="i" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span><span class="ml">View all</span>';
+  row.appendChild(a);
+}
 function routeTop() { if (routeAll()) return; if (routeWeb()) return; route(); }
 window.addEventListener("hashchange", routeTop);
 routeTop();

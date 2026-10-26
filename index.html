@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=48">
-<link rel="stylesheet" href="player.css?v=48">
+<link rel="stylesheet" href="style.css?v=50">
+<link rel="stylesheet" href="player.css?v=50">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -265,6 +265,19 @@ html.detail body .tabbar{transform:translate(-170%,-50%)!important;opacity:0!imp
 .er.active .go{background:rgba(255,255,255,.18)!important}
 .er.active .go::before{width:12px;height:16px;border:0;margin:0;background:linear-gradient(90deg,#fff 0 4px,transparent 4px 8px,#fff 8px 12px)}
 </style>
+<style id="moretile">
+.row .mt{flex:0 0 92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;padding-right:6px}
+.mt .mc{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.22);background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.05));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 22px rgba(0,0,0,.5);transition:transform .2s,background .2s}
+.mt .mc svg{width:26px;height:26px;stroke-width:2.4}
+.mt .ml{font-size:12px;font-weight:600;color:rgba(255,255,255,.75)}
+.mt:active .mc{transform:scale(.9)}
+@media (min-width:900px){
+.row .mt{flex:0 0 130px}
+.mt .mc{width:64px;height:64px}
+.mt .ml{font-size:14px}
+}
+@media (hover:hover){.mt:hover .mc{background:rgba(229,9,20,.85);transform:scale(1.08)}}
+</style>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -276,7 +289,7 @@ html.detail body .tabbar{transform:translate(-170%,-50%)!important;opacity:0!imp
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=48"></script>
+<script src="player.js?v=50"></script>
 <script id="nativeplayer">
 (function () {
   window.initPlayers = function (root) {
@@ -297,7 +310,7 @@ html.detail body .tabbar{transform:translate(-170%,-50%)!important;opacity:0!imp
   };
 })();
 </script>
-<script src="app.js?v=48"></script>
+<script src="app.js?v=50"></script>
 <script id="scrollfx">
 (function () {
   var app = document.getElementById("app");
