@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=60">
-<link rel="stylesheet" href="player.css?v=60">
+<link rel="stylesheet" href="style.css?v=61">
+<link rel="stylesheet" href="player.css?v=61">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -331,6 +331,17 @@ document.addEventListener("load", function (e) {
 .er .num{background:linear-gradient(135deg,#ff3b47,#c1121f)!important;color:#fff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 12px rgba(229,9,20,.35)!important}
 .er.active .num{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 0 2px rgba(255,255,255,.85),0 4px 14px rgba(229,9,20,.5)!important}
 </style>
+<style id="sggridcss">
+#sugg{margin-top:8px}
+.sggrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.sggrid .pc{border-radius:18px}
+.sggrid .pt{left:6px!important;right:6px!important;bottom:6px!important;padding:6px 8px!important;font-size:11.5px!important;border-radius:12px!important}
+.sggrid .rate{top:6px!important;left:6px!important;font-size:11px!important;padding:2px 7px!important}
+@media (min-width:900px){
+.sggrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+.sggrid .pt{font-size:13px!important}
+}
+</style>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -342,7 +353,7 @@ document.addEventListener("load", function (e) {
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=60"></script>
+<script src="player.js?v=61"></script>
 <script id="nativeplayer">
 (function () {
   window.initPlayers = function (root) {
@@ -363,7 +374,7 @@ document.addEventListener("load", function (e) {
   };
 })();
 </script>
-<script src="app.js?v=60"></script>
+<script src="app.js?v=61"></script>
 <script id="scrollfx">
 (function () {
   var app = document.getElementById("app");
