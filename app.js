@@ -1033,6 +1033,46 @@ homeView = async function () {
     app.classList.remove("herowait");
   }
 };
+async function addSugg(kind, id, expect) {
+  try {
+    var list = await loadSeries();
+    var tasks = [];
+    if (typeof loadMovies === "function") tasks.push(loadMovies().catch(function () {}));
+    if (typeof loadWeb === "function") tasks.push(loadWeb().catch(function () {}));
+    await Promise.all(tasks);
+    if (location.hash !== expect) return;
+    var all = ssMerge(list).filter(function (s) {
+      var k = s._movie ? "movie" : (s._web ? "web" : "series");
+      return !(k === kind && String(s.id) === String(id));
+    });
+    var pick = shuf(all).slice(0, 8);
+    if (!pick.length) return;
+    var old = document.getElementById("sugg");
+    if (old) old.remove();
+    app.insertAdjacentHTML("beforeend", '<div id="sugg"><h2 class="h">You may also like</h2><div class="row">' + pick.map(poster).join("") + "</div></div>");
+  } catch (e) {}
+}
+if (typeof watchView === "function") {
+  var watchViewS = watchView;
+  watchView = async function (sid, eid) {
+    await watchViewS(sid, eid);
+    addSugg("series", sid, "#watch-" + sid + "-" + eid);
+  };
+}
+if (typeof playMovieView === "function") {
+  var playMovieViewS = playMovieView;
+  playMovieView = async function (id) {
+    await playMovieViewS(id);
+    addSugg("movie", id, "#playmovie-" + id);
+  };
+}
+if (typeof webWatchView === "function") {
+  var webWatchViewS = webWatchView;
+  webWatchView = async function (sid, eid) {
+    await webWatchViewS(sid, eid);
+    addSugg("web", sid, "#webwatch-" + sid + "-" + eid);
+  };
+}
 function routeTop() { if (routeAll()) return; if (routeWeb()) return; route(); }
 window.addEventListener("hashchange", routeTop);
 routeTop();
