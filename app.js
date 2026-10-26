@@ -1073,6 +1073,33 @@ if (typeof webWatchView === "function") {
     addSugg("web", sid, "#webwatch-" + sid + "-" + eid);
   };
 }
+function sgRow(s) {
+  var p = s._movie ? "movie" : (s._web ? "web" : "series");
+  var tag = s._movie ? "Movie" : (s._web ? "Web Series" : "Anime");
+  var sub = [tag, s.year, s.rating ? "\u2605 " + s.rating : "", s.genre].filter(Boolean).join(" \u00b7 ");
+  return '<a class="sg" href="#' + p + '-' + esc(s.id) + '"><span class="th">' +
+    (s.cover_url ? '<img src="' + esc(s.cover_url) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : "") +
+    '</span><span class="meta"><span class="t">' + esc(s.title) + '</span><span class="s">' + esc(sub) + '</span></span><span class="go">\u203a</span></a>';
+}
+async function addSugg(kind, id, expect) {
+  try {
+    var list = await loadSeries();
+    var tasks = [];
+    if (typeof loadMovies === "function") tasks.push(loadMovies().catch(function () {}));
+    if (typeof loadWeb === "function") tasks.push(loadWeb().catch(function () {}));
+    await Promise.all(tasks);
+    if (location.hash !== expect) return;
+    var all = ssMerge(list).filter(function (s) {
+      var k = s._movie ? "movie" : (s._web ? "web" : "series");
+      return !(k === kind && String(s.id) === String(id));
+    });
+    var pick = shuf(all).slice(0, 6);
+    if (!pick.length) return;
+    var old = document.getElementById("sugg");
+    if (old) old.remove();
+    app.insertAdjacentHTML("beforeend", '<div id="sugg"><h2 class="h">You may also like</h2><div class="sglist">' + pick.map(sgRow).join("") + "</div></div>");
+  } catch (e) {}
+}
 function routeTop() { if (routeAll()) return; if (routeWeb()) return; route(); }
 window.addEventListener("hashchange", routeTop);
 routeTop();
