@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=42">
-<link rel="stylesheet" href="player.css?v=42">
+<link rel="stylesheet" href="style.css?v=44">
+<link rel="stylesheet" href="player.css?v=44">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -252,6 +252,7 @@ html.detail #app{left:0!important}
 html.detail body .tabbar{transform:translate(-170%,-50%)!important;opacity:0!important;pointer-events:none!important}
 }
 </style>
+<style id="nodl">.dlbtn{display:none!important}</style>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -263,7 +264,7 @@ html.detail body .tabbar{transform:translate(-170%,-50%)!important;opacity:0!imp
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=42"></script>
+<script src="player.js?v=44"></script>
 <script id="nativeplayer">
 (function () {
   window.initPlayers = function (root) {
@@ -284,7 +285,7 @@ html.detail body .tabbar{transform:translate(-170%,-50%)!important;opacity:0!imp
   };
 })();
 </script>
-<script src="app.js?v=42"></script>
+<script src="app.js?v=44"></script>
 <script id="scrollfx">
 (function () {
   var app = document.getElementById("app");
