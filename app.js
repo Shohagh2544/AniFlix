@@ -1025,7 +1025,7 @@ homeView = async function () {
     }
     if (!f) { f = all[Math.floor(Math.random() * all.length)]; heroPick = f; }
     var p = f._movie ? "movie" : (f._web ? "web" : "series");
-    var tag = f._movie ? "Movie" : (f._web ? "Web Series" : "");
+    var tag = f._movie ? "Movie" : (f._web ? "Web Series" : "Anime");
     hero.outerHTML = '<a class="hero" href="#' + p + "-" + esc(f.id) + '"><img src="' + esc(f.cover_url) + '" alt="" decoding="async" onerror="this.remove()"><div class="shade"></div><div class="hc"><div class="chips">' +
       (tag ? '<span class="chip">' + tag + "</span>" : "") + chips(f) + "</div><h1>" + esc(f.title) + "</h1><p>" + esc(f.description) +
       '</p><span class="btn primary">\u25b6 Watch now</span></div></a>';
