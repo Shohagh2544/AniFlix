@@ -978,6 +978,34 @@ async function searchView() {
   q.addEventListener("input", draw);
   draw();
 }
+function rowHead(h, href) {
+  if (!h || h.getAttribute("data-rh")) return;
+  h.setAttribute("data-rh", "1");
+  h.setAttribute("data-href", href);
+  h.setAttribute("role", "link");
+  h.tabIndex = 0;
+  var row = h.nextElementSibling;
+  if (!row || !row.classList.contains("row")) return;
+  var MAX = 8;
+  while (row.children.length > MAX) row.removeChild(row.lastChild);
+  var a = document.createElement("a");
+  a.className = "mt";
+  a.href = href;
+  a.setAttribute("aria-label", "View all");
+  a.innerHTML = '<span class="mc"><svg class="i" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span><span class="ml">View all</span>';
+  row.appendChild(a);
+}
+document.addEventListener("click", function (e) {
+  var t = e.target;
+  if (!t || !t.closest) return;
+  var h = t.closest("h2[data-href]");
+  if (h) location.hash = h.getAttribute("data-href");
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key !== "Enter") return;
+  var t = e.target;
+  if (t && t.getAttribute && t.getAttribute("data-href")) location.hash = t.getAttribute("data-href");
+});
 function routeTop() { if (routeAll()) return; if (routeWeb()) return; route(); }
 window.addEventListener("hashchange", routeTop);
 routeTop();
