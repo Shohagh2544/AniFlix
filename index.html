@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=56">
-<link rel="stylesheet" href="player.css?v=56">
+<link rel="stylesheet" href="style.css?v=57">
+<link rel="stylesheet" href="player.css?v=57">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -314,7 +314,7 @@ document.addEventListener("load", function (e) {
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=56"></script>
+<script src="player.js?v=57"></script>
 <script id="nativeplayer">
 (function () {
   window.initPlayers = function (root) {
@@ -335,7 +335,7 @@ document.addEventListener("load", function (e) {
   };
 })();
 </script>
-<script src="app.js?v=56"></script>
+<script src="app.js?v=57"></script>
 <script id="scrollfx">
 (function () {
   var app = document.getElementById("app");
@@ -489,6 +489,34 @@ document.addEventListener("load", function (e) {
       if (b.getAttribute("data-a") === "now") nx.click();
     });
   }
+})();
+</script>
+<script id="msgdebug">
+(function () {
+  if (location.search.indexOf("debug") === -1) return;
+  var box = document.createElement("div");
+  box.style.cssText = "position:fixed;left:8px;right:8px;top:8px;z-index:99999;background:rgba(0,0,0,.9);color:#9f9;font:11px/1.35 monospace;padding:8px;border-radius:10px;max-height:38vh;overflow:auto;white-space:pre-wrap;word-break:break-all;border:1px solid #444";
+  document.body.appendChild(box);
+  var n = 0, log = "";
+  function show(extra) {
+    var f = document.querySelector(".player iframe");
+    var head = "autonext installed: " + (document.getElementById("autonext") ? "yes" : "NO") +
+      "\nplayer: " + (f ? "iframe " + f.src.split("/").slice(0, 3).join("/") : (document.querySelector(".player video") ? "direct video" : "none")) +
+      "\nmessages received: " + n + "\n";
+    box.textContent = head + (extra ? "\n" + extra : "") + "\n" + log.slice(0, 1400);
+  }
+  window.addEventListener("message", function (e) {
+    var d;
+    try { d = typeof e.data === "string" ? e.data : JSON.stringify(e.data); } catch (x) { d = String(e.data); }
+    n++;
+    log = "[" + n + "] " + e.origin + " -> " + String(d).slice(0, 160) + "\n" + log;
+    show();
+  });
+  document.addEventListener("ended", function (e) {
+    if (e.target && e.target.tagName === "VIDEO") { log = "VIDEO ENDED EVENT\n" + log; show(); }
+  }, true);
+  setInterval(function () { show(); }, 1500);
+  show();
 })();
 </script>
 </body>
