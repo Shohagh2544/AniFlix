@@ -845,6 +845,49 @@ function drawSSNow() {
   var l = ssMerge(allSeries).filter(function (s) { return (s.title || "").toLowerCase().indexOf(q) !== -1; });
   box.innerHTML = (q ? "" : '<div class="ssl">All series, movies &amp; web series</div>') + (l.length ? l.map(ssRow).join("") : '<div class="empty" style="padding:28px">No results.</div>');
 }
+function inListK(k) { return getList().indexOf(k) !== -1; }
+function toggleListK(k) {
+  var l = getList(), i = l.indexOf(k);
+  if (i === -1) l.push(k); else l.splice(i, 1);
+  setList(l);
+  return i === -1;
+}
+function addSave(key) {
+  var bd = app.querySelector(".backdrop");
+  if (!bd || document.getElementById("save2")) return;
+  bd.insertAdjacentHTML("beforeend", '<button class="rb r glass' + (inListK(key) ? " on" : "") + '" id="save2" aria-label="My List">' + IC.bm + "</button>");
+  document.getElementById("save2").addEventListener("click", function () { this.classList.toggle("on", toggleListK(key)); });
+}
+if (typeof movieView === "function") {
+  var movieView0 = movieView;
+  movieView = async function (id) {
+    await movieView0(id);
+    if (location.hash === "#movie-" + id) addSave("m:" + id);
+  };
+}
+if (typeof webView === "function") {
+  var webView0 = webView;
+  webView = async function (id) {
+    await webView0(id);
+    if (location.hash === "#web-" + id) addSave("w:" + id);
+  };
+}
+async function listView() {
+  setTab("list");
+  document.title = "My List \u00b7 AniFlix";
+  var head = topBar("", true) + '<h2 class="h" style="margin-top:6px">My List</h2>';
+  app.innerHTML = head + '<div class="empty">Loading...</div>';
+  try {
+    await Promise.all([loadSeries(), loadMovies().catch(function () {}), typeof loadWeb === "function" ? loadWeb().catch(function () {}) : null]);
+  } catch (e) { app.innerHTML = head + err(e); return; }
+  var ids = getList(), items = [];
+  function tag(src, flag) { return (src || []).map(function (m) { var c = {}; for (var k in m) c[k] = m[k]; c[flag] = true; return c; }); }
+  (allSeries || []).forEach(function (s) { if (ids.indexOf(Number(s.id)) !== -1) items.push(s); });
+  tag(typeof allMovies !== "undefined" ? allMovies : [], "_movie").forEach(function (m) { if (ids.indexOf("m:" + m.id) !== -1) items.push(m); });
+  tag(typeof allWeb !== "undefined" ? allWeb : [], "_web").forEach(function (m) { if (ids.indexOf("w:" + m.id) !== -1) items.push(m); });
+  if (location.hash !== "#list") return;
+  app.innerHTML = head + (items.length ? '<div class="grid">' + items.map(poster).join("") + "</div>" : '<div class="empty">Tap the bookmark on any title to save it here.</div>');
+}
 function routeTop() { if (routeAll()) return; if (routeWeb()) return; route(); }
 window.addEventListener("hashchange", routeTop);
 routeTop();
