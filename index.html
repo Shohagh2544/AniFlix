@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#050505">
 <title>AniFlix</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-<link rel="stylesheet" href="style.css?v=62">
-<link rel="stylesheet" href="player.css?v=62">
+<link rel="stylesheet" href="style.css?v=64">
+<link rel="stylesheet" href="player.css?v=64">
 <script>
 window.onerror = function (m, u, l) {
   var d = document.getElementById("app");
@@ -349,6 +349,12 @@ document.addEventListener("load", function (e) {
 .pc .pt,.pc .rate{z-index:2}
 .pc .pt{background:rgba(0,0,0,.3)!important;text-shadow:0 1px 6px rgba(0,0,0,.9)}
 </style>
+<style id="adcss2">
+.adbox{display:block;max-width:728px;margin:18px auto!important;text-align:center;border-radius:14px;overflow:hidden}
+.adbox .adl{display:block;text-align:left;font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin:0 0 4px 2px}
+.adbox:has(ins[data-ad-status="unfilled"]){display:none}
+.adprev{height:60px;border:1px dashed rgba(255,255,255,.25);border-radius:12px;display:grid;place-items:center;color:rgba(255,255,255,.4);font-size:12px}
+</style>
 </head>
 <body>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -360,7 +366,7 @@ document.addEventListener("load", function (e) {
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
-<script src="player.js?v=62"></script>
+<script src="player.js?v=64"></script>
 <script id="nativeplayer">
 (function () {
   window.initPlayers = function (root) {
@@ -381,7 +387,7 @@ document.addEventListener("load", function (e) {
   };
 })();
 </script>
-<script src="app.js?v=62"></script>
+<script src="app.js?v=64"></script>
 <script id="scrollfx">
 (function () {
   var app = document.getElementById("app");

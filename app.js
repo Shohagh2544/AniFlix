@@ -1119,6 +1119,48 @@ async function addSugg(kind, id, expect) {
     app.insertAdjacentHTML("beforeend", '<div id="sugg"><h2 class="h">You may also like</h2><div class="sggrid">' + pick.map(poster).join("") + "</div></div>");
   } catch (e) {}
 }
+var adTimer = 0, adScriptOn = false;
+function adsReady() { return !!(window.ADS && window.ADS.client && window.ADS.slot); }
+function addAd() {}
+function adSpot() {
+  var h = location.hash || "";
+  if (/^#(watch|webwatch)-/.test(h)) return { sel: ".wnav", pos: "afterend" };
+  if (/^#playmovie-/.test(h)) return { sel: ".player", pos: "afterend" };
+  if (/^#(series|movie|web)-/.test(h)) return { sel: ".info", pos: "beforeend" };
+  if (h === "" || h === "#") return { sel: ".row", pos: "afterend" };
+  return { sel: "#app", pos: "beforeend" };
+}
+function adPlace() {
+  var preview = location.search.indexOf("adpreview") !== -1;
+  if (!adsReady() && !preview) return;
+  if (document.getElementById("adbox")) return;
+  if (app.querySelector(".skel") || app.children.length < 2) return;
+  var sp = adSpot();
+  var host = sp.sel === "#app" ? app : app.querySelector(sp.sel);
+  if (!host) return;
+  var inner;
+  if (adsReady()) {
+    inner = '<ins class="adsbygoogle" style="display:block" data-ad-client="' + esc(window.ADS.client) + '" data-ad-slot="' + esc(window.ADS.slot) + '" data-ad-format="horizontal" data-full-width-responsive="false"></ins>';
+  } else {
+    inner = '<div class="adprev">Ad preview</div>';
+  }
+  host.insertAdjacentHTML(sp.pos, '<div class="adbox" id="adbox"><span class="adl">Ad</span>' + inner + "</div>");
+  if (adsReady()) {
+    if (!adScriptOn) {
+      adScriptOn = true;
+      var s = document.createElement("script");
+      s.async = true;
+      s.crossOrigin = "anonymous";
+      s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(window.ADS.client);
+      document.head.appendChild(s);
+    }
+    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+  }
+}
+function adQueue() { clearTimeout(adTimer); adTimer = setTimeout(adPlace, 700); }
+new MutationObserver(adQueue).observe(app, { childList: true, subtree: true });
+window.addEventListener("hashchange", adQueue);
+adQueue();
 function routeTop() { if (routeAll()) return; if (routeWeb()) return; route(); }
 window.addEventListener("hashchange", routeTop);
 routeTop();
