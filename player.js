@@ -7,6 +7,21 @@
   window.initPlayers = function (root) {
     root.querySelectorAll(".vp").forEach(function (box) {
       var src = box.getAttribute("data-src");
+
+      // Not a direct video file (e.g. an embed page like Zokoanime): load it in a
+      // sandboxed iframe so it can't open popups or redirect the page.
+      if (!/\.(mp4|webm|m3u8)(\?|$)/i.test(src)) {
+        var f = document.createElement("iframe");
+        f.src = src;
+        f.allowFullscreen = true;
+        f.referrerPolicy = "no-referrer";
+        f.setAttribute("sandbox", "allow-scripts allow-same-origin");
+        f.setAttribute("allow", "autoplay; fullscreen; picture-in-picture");
+        f.style.cssText = "position:absolute;inset:0;width:100%;height:100%;border:0";
+        box.replaceChildren(f);
+        return;
+      }
+
       box.innerHTML =
         '<video playsinline preload="metadata"></video>' +
         '<button class="big" aria-label="Play">▶</button>' +
