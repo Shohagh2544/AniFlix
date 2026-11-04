@@ -171,31 +171,194 @@ async function seriesView(id) {
     }).join("");
   }
 
-  function play(i, scroll) {
+function play(i, scroll) {
     cur = i;
     var ep = eps[i];
-    try { localStorage.setItem("aniflix-last-" + id, String(ep.id)); } catch (e) {}
+
+    try {
+        localStorage.setItem("aniflix-last-" + id, String(ep.id));
+    } catch (e) {}
+
     var v = videoInfo(ep), player;
-    if (!v) player = '<div class="empty">No video yet.</div>';
-    else if (v.kind === "video" && window.initPlayers) player = '<div class="vp" data-src="' + esc(v.src) + '"></div>';
-    else if (v.kind === "video") player = '<video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video>';
-    else player = '<iframe src="' + esc(v.src) + '" ' + (/abyss/i.test(v.src) ? 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ' : '') + 'allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
-    stage.innerHTML = '<div class="player">' + player + "</div>";
+
+    if (!v) {
+        player = '<div class="empty">No video yet.</div>';
+    } else if (v.kind === "video" && window.initPlayers) {
+        player = '<div class="vp" data-src="' + esc(v.src) + '"></div>';
+    } else if (v.kind === "video") {
+        player = '<video controls playsinline preload="metadata" src="' + esc(v.src) + '"></video>';
+    } else {
+        player = '<iframe src="' + esc(v.src) + '" ' +
+            (/abyss/i.test(v.src) ? 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ' : '') +
+            'allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>';
+    }
+
+    stage.innerHTML = '<div class="player">' + player + '</div>';
+
     if (window.initPlayers) window.initPlayers(stage);
 
-    var fs = v && v.kind === "iframe" ? '<a href="' + esc(v.src) + '" target="_blank" rel="noopener">Full screen ↗</a>' : "";
-    nav.innerHTML = '<div class="navrow"><button class="navb glass" id="prev"' + (i === 0 ? " disabled" : "") + '>‹ Prev</button>' +
-      '<div class="mid"><span class="t">' + esc(ep.title || ("Episode " + epNum(ep, i))) + "</span>" + fs + "</div>" +
-      '<button class="navb glass" id="next"' + (i === eps.length - 1 ? " disabled" : "") + '>Next ›</button></div>';
-    document.getElementById("prev").addEventListener("click", function () { if (cur > 0) play(cur - 1, true); });
-    document.getElementById("next").addEventListener("click", function () { if (cur < eps.length - 1) play(cur + 1, true); });
+    // AniFlix download UI
+    var downloadPanel = "";
+    var supportedVideo = false;
+
+    if (v && v.kind === "video" && v.src) {
+        try {
+            var host = new URL(v.src, window.location.href).hostname.toLowerCase();
+
+            supportedVideo =
+                host === "abyss.to" ||
+                host.endsWith(".abyss.to") ||
+                host === "abysscdn.com" ||
+                host.endsWith(".abysscdn.com");
+        } catch (e) {}
+    }
+
+    if (supportedVideo) {
+        downloadPanel =
+            '<div class="aniflix-download" style="' +
+                'margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,.10);' +
+                'border-radius:14px;background:linear-gradient(135deg,#191919,#101010);' +
+            '">' +
+                '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">' +
+                    '<span style="font-size:22px;">⬇</span>' +
+                    '<div>' +
+                        '<div style="font-size:15px;font-weight:700;color:#fff;">Download Episode</div>' +
+                        '<div style="font-size:12px;color:#999;margin-top:3px;">Choose your preferred quality</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="display:flex;gap:9px;flex-wrap:wrap;">' +
+                    '<select id="aniflix-download-quality" style="' +
+                        'flex:1;min-width:110px;padding:12px;border-radius:9px;' +
+                        'background:#242424;color:#fff;border:1px solid #444;font-size:14px;' +
+                    '">' +
+                        '<option value="h">High Quality</option>' +
+                        '<option value="m" selected>Medium Quality</option>' +
+                        '<option value="l">Low Quality</option>' +
+                    '</select>' +
+                    '<button id="aniflix-download-btn" type="button" style="' +
+                        'flex:1;min-width:130px;padding:12px 16px;border:0;border-radius:9px;' +
+                        'background:linear-gradient(135deg,#ff4655,#c1121f);' +
+                        'color:white;font-size:14px;font-weight:700;cursor:pointer;' +
+                    '">⬇ Download</button>' +
+                '</div>' +
+                '<div id="aniflix-download-status" style="' +
+                    'font-size:12px;color:#aaa;margin-top:10px;min-height:16px;' +
+                '"></div>' +
+            '</div>';
+    }
+
+    if (downloadPanel) {
+        stage.insertAdjacentHTML("beforeend", downloadPanel);
+    }
+
+    var fs = v && v.kind === "iframe"
+        ? '<a href="' + esc(v.src) + '" target="_blank" rel="noopener">Full screen ↗</a>'
+        : "";
+
+    nav.innerHTML =
+        '<div class="navrow">' +
+            '<button class="navb glass" id="prev"' + (i === 0 ? " disabled" : "") + '>‹ Prev</button>' +
+            '<div class="mid"><span class="t">' +
+                esc(ep.title || ("Episode " + epNum(ep, i))) +
+            '</span>' + fs + '</div>' +
+            '<button class="navb glass" id="next"' +
+                (i === eps.length - 1 ? " disabled" : "") +
+            '>Next ›</button>' +
+        '</div>';
+
+    document.getElementById("prev").addEventListener("click", function () {
+        if (cur > 0) play(cur - 1, true);
+    });
+
+    document.getElementById("next").addEventListener("click", function () {
+        if (cur < eps.length - 1) play(cur + 1, true);
+    });
+
+    // Download button action
+    if (supportedVideo) {
+        var downloadButton = document.getElementById("aniflix-download-btn");
+        var qualitySelect = document.getElementById("aniflix-download-quality");
+        var downloadStatus = document.getElementById("aniflix-download-status");
+
+        downloadButton.addEventListener("click", async function () {
+            var quality = qualitySelect.value;
+
+            downloadButton.disabled = true;
+            downloadButton.style.opacity = "0.6";
+            downloadButton.textContent = "Preparing...";
+            downloadStatus.textContent = "Preparing your download. Please wait...";
+
+            try {
+                var response = await fetch(
+                    "https://aniflix-downloader-api-production.up.railway.app/download",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            url: v.src,
+                            quality: quality
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    var errorText = await response.text();
+                    throw new Error(errorText || "Download failed (" + response.status + ")");
+                }
+
+                var blob = await response.blob();
+
+                if (!blob.size) {
+                    throw new Error("The downloaded file is empty.");
+                }
+
+                var objectUrl = URL.createObjectURL(blob);
+                var link = document.createElement("a");
+
+                var episodeName = (ep.title || ("Episode-" + epNum(ep, i)))
+                    .replace(/[\\/:*?"<>|]/g, "-")
+                    .replace(/\s+/g, "-");
+
+                link.href = objectUrl;
+                link.download = "AniFlix-" + episodeName + ".mp4";
+
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                setTimeout(function () {
+                    URL.revokeObjectURL(objectUrl);
+                }, 60000);
+
+                downloadStatus.textContent = "Download started successfully!";
+            } catch (error) {
+                console.error("AniFlix download error:", error);
+                downloadStatus.textContent =
+                    "Download failed: " + (error.message || "Please try again.");
+            } finally {
+                downloadButton.disabled = false;
+                downloadButton.style.opacity = "1";
+                downloadButton.textContent = "⬇ Download";
+            }
+        });
+    }
+
     var vid = stage.querySelector("video");
-    if (vid) vid.addEventListener("ended", function () { if (cur < eps.length - 1) play(cur + 1, false); });
+
+    if (vid) {
+        vid.addEventListener("ended", function () {
+            if (cur < eps.length - 1) play(cur + 1, false);
+        });
+    }
 
     renderList();
-    if (scroll) stage.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
 
+    if (scroll) {
+        stage.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+}
   document.getElementById("go").addEventListener("click", function () { if (eps.length) goWatch(id, eps[lastIdx > -1 ? lastIdx : 0].id); });
   listEl.addEventListener("click", function (e) {
     var b = e.target.closest ? e.target.closest(".er") : null;
