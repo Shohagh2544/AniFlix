@@ -520,7 +520,7 @@ var canDownload =
     downloadHost === "abysscdn.com" ||
     downloadHost.endsWith(".abysscdn.com");
 
-if (canDownload) {
+{
     var downloadPanel = document.createElement("div");
 
     downloadPanel.style.cssText =
