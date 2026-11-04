@@ -504,6 +504,111 @@ async function watchView(sid, eid) {
     '<h2 class="h">Episodes</h2><div class="el" id="wel">' + rows + '</div>';
 
   if (window.initPlayers) window.initPlayers(app);
+  
+// AniFlix Download Button for Watch Page
+var downloadHost = "";
+
+if (v && v.kind === "video" && v.src) {
+    try {
+        downloadHost = new URL(v.src, location.href).hostname.toLowerCase();
+    } catch (e) {}
+}
+
+var canDownload =
+    downloadHost === "abyss.to" ||
+    downloadHost.endsWith(".abyss.to") ||
+    downloadHost === "abysscdn.com" ||
+    downloadHost.endsWith(".abysscdn.com");
+
+if (canDownload) {
+    var downloadPanel = document.createElement("div");
+
+    downloadPanel.style.cssText =
+        "margin:14px 0;padding:16px;border:1px solid rgba(255,255,255,.12);" +
+        "border-radius:14px;background:#151515;color:white;";
+
+    downloadPanel.innerHTML = `
+        <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
+            ⬇ Download Episode
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <select id="watch-download-quality"
+                style="flex:1;min-width:120px;padding:12px;border-radius:8px;background:#242424;color:white;border:1px solid #444;">
+                <option value="h">High Quality</option>
+                <option value="m" selected>Medium Quality</option>
+                <option value="l">Low Quality</option>
+            </select>
+            <button id="watch-download-button"
+                style="flex:1;min-width:120px;padding:12px;border:0;border-radius:8px;background:#e63946;color:white;font-weight:bold;">
+                ⬇ Download
+            </button>
+        </div>
+        <div id="watch-download-status"
+            style="font-size:12px;color:#aaa;margin-top:10px;"></div>
+    `;
+
+    var playerElement = app.querySelector(".player");
+    if (playerElement) {
+        playerElement.insertAdjacentElement("afterend", downloadPanel);
+    }
+
+    var downloadButton = document.getElementById("watch-download-button");
+    var qualitySelect = document.getElementById("watch-download-quality");
+    var downloadStatus = document.getElementById("watch-download-status");
+
+    downloadButton.addEventListener("click", async function () {
+        downloadButton.disabled = true;
+        downloadButton.textContent = "Preparing...";
+        downloadStatus.textContent = "Preparing your download...";
+
+        try {
+            var response = await fetch(
+                "https://aniflix-downloader-api-production.up.railway.app/download",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        url: v.src,
+                        quality: qualitySelect.value
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(await response.text() || "Download failed");
+            }
+
+            var blob = await response.blob();
+
+            if (!blob.size) throw new Error("Empty download received.");
+
+            var objectUrl = URL.createObjectURL(blob);
+            var link = document.createElement("a");
+            var filename = (ep.title || ("Episode-" + num(ep, i)))
+                .replace(/[\\/:*?"<>|]/g, "-")
+                .replace(/\s+/g, "-");
+
+            link.href = objectUrl;
+            link.download = "AniFlix-" + filename + ".mp4";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setTimeout(function () {
+                URL.revokeObjectURL(objectUrl);
+            }, 60000);
+
+            downloadStatus.textContent = "Download started!";
+        } catch (error) {
+            downloadStatus.textContent = "Error: " + error.message;
+        } finally {
+            downloadButton.disabled = false;
+            downloadButton.textContent = "⬇ Download";
+        }
+    });
+}
   var vid = app.querySelector("video");
   if (vid) vid.addEventListener("ended", function () { if (i < eps.length - 1) go(i + 1); });
   document.getElementById("wprev").addEventListener("click", function () { if (i > 0) go(i - 1); });
