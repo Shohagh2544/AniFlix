@@ -840,6 +840,101 @@ async function movieView(id) {
     more.textContent = d.classList.contains("clamp") ? "More" : "Less";
   });
 }
+  
+function addAniFlixDownloadPanel(container, video, title, label) {
+    if (!container || !video || !video.src) return;
+
+    var player = container.querySelector(".player");
+    if (!player || container.querySelector("[data-aniflix-download]")) return;
+
+    var panel = document.createElement("div");
+    panel.setAttribute("data-aniflix-download", "true");
+
+    panel.style.cssText =
+        "margin:14px 0;padding:16px;border:1px solid rgba(255,255,255,.12);" +
+        "border-radius:14px;background:#151515;color:white;";
+
+    panel.innerHTML = `
+        <div style="font-size:16px;font-weight:700;margin-bottom:12px">
+            ⬇ Download ${label || "Video"}
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <select data-quality style="flex:1;min-width:120px;padding:12px;border-radius:8px;background:#242424;color:white;border:1px solid #444">
+                <option value="h">High Quality</option>
+                <option value="m" selected>Medium Quality</option>
+                <option value="l">Low Quality</option>
+            </select>
+
+            <button data-download style="flex:1;min-width:120px;padding:12px;border:0;border-radius:8px;background:#e63946;color:white;font-weight:bold">
+                ⬇ Download
+            </button>
+        </div>
+
+        <div data-status style="font-size:12px;color:#aaa;margin-top:10px"></div>
+    `;
+
+    player.insertAdjacentElement("afterend", panel);
+
+    var button = panel.querySelector("[data-download]");
+    var quality = panel.querySelector("[data-quality]");
+    var status = panel.querySelector("[data-status]");
+
+    button.addEventListener("click", async function () {
+        button.disabled = true;
+        button.textContent = "Preparing...";
+        status.textContent = "Preparing your download...";
+
+        try {
+            var response = await fetch(
+                "https://aniflix-downloader-api-production.up.railway.app/download",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        url: video.src,
+                        quality: quality.value
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(await response.text() || "Download failed");
+            }
+
+            var blob = await response.blob();
+            if (!blob.size) throw new Error("Empty download received");
+
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement("a");
+
+            var filename = (title || "Video")
+                .replace(/[\\/:*?"<>|]/g, "-")
+                .replace(/\s+/g, "-");
+
+            link.href = url;
+            link.download = "AniFlix-" + filename + ".mp4";
+
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setTimeout(function () {
+                URL.revokeObjectURL(url);
+            }, 60000);
+
+            status.textContent = "Download started!";
+        } catch (error) {
+            status.textContent = "Error: " + error.message;
+        } finally {
+            button.disabled = false;
+            button.textContent = "⬇ Download";
+        }
+    });
+}
+  
 async function playMovieView(id) {
   setTab("home");
   document.title = "Watching · AniFlix";
