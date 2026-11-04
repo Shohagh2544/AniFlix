@@ -508,7 +508,7 @@ async function watchView(sid, eid) {
 // AniFlix Download Button for Watch Page
 var downloadHost = "";
 
-if (v && v.kind === "video" && v.src) {
+if (v && v.src) {
     try {
         downloadHost = new URL(v.src, location.href).hostname.toLowerCase();
     } catch (e) {}
