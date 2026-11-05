@@ -434,6 +434,13 @@ function showPreroll(onDone) {
       } else { v.src = src; }
       box.innerHTML = "";
       box.appendChild(v);
+                var adDone = false;
+          v.addEventListener("play", function () {
+            if (adDone) return;
+            adDone = true;
+            v.pause();
+            showPreroll(function () { v.play(); });
+          });
     }
   };
 })();
