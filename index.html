@@ -434,12 +434,39 @@ function showPreroll(onDone) {
       } else { v.src = src; }
       box.innerHTML = "";
       box.appendChild(v);
-                var adDone = false;
-          v.addEventListener("play", function () {
-            if (adDone) return;
-            adDone = true;
+                          var adShown = false, midShown = false, midAt = null;
+
+          function adAllowed() {
+            // minimum 10 minutes between ads
+            return Date.now() - (+localStorage.getItem("lastAd") || 0) > 10 * 60 * 1000;
+          }
+          function runAd() {
+            if (document.fullscreenElement && document.exitFullscreen) {
+              try { document.exitFullscreen(); } catch (e) {}
+            }
             v.pause();
+            localStorage.setItem("lastAd", Date.now());
             showPreroll(function () { v.play(); });
+          }
+
+          // Pre-roll: 50% chance when the video first starts
+          v.addEventListener("play", function () {
+            if (adShown) return;
+            adShown = true;
+            if (Math.random() < 0.5 && adAllowed()) runAd();
+          });
+
+          // Mid-roll: only for videos longer than 20 minutes,
+          // at a random point between 30% and 70% of the video
+          v.addEventListener("loadedmetadata", function () {
+            if (v.duration > 20 * 60) midAt = v.duration * (0.3 + Math.random() * 0.4);
+          });
+          v.addEventListener("timeupdate", function () {
+            if (midShown || midAt === null || v.paused) return;
+            if (v.currentTime >= midAt) {
+              midShown = true;
+              if (Math.random() < 0.7 && adAllowed()) runAd();
+            }
           });
     }
   };
