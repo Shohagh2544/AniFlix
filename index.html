@@ -367,6 +367,57 @@ document.addEventListener("load", function (e) {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 <script src="player.js?v=64"></script>
+  <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+<script>
+var VAST_URL = 'https://youradexchange.com/video/select.php?r=12408778';
+
+function showPreroll(onDone) {
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99999';
+  overlay.innerHTML =
+    '<video id="ad-video" playsinline style="position:absolute;width:100%;height:100%"></video>' +
+    '<div id="ad-box" style="position:absolute;inset:0"></div>';
+  document.body.appendChild(overlay);
+
+  var video = overlay.querySelector('#ad-video');
+  var box = overlay.querySelector('#ad-box');
+  var adsManager, finished = false, timeout;
+
+  function finish() {
+    if (finished) return;
+    finished = true;
+    clearTimeout(timeout);
+    try { adsManager && adsManager.destroy(); } catch (e) {}
+    overlay.remove();
+    onDone();
+  }
+
+  if (typeof google === 'undefined' || !google.ima) return finish();
+  timeout = setTimeout(finish, 10000);
+
+  var display = new google.ima.AdDisplayContainer(box, video);
+  display.initialize();
+  var loader = new google.ima.AdsLoader(display);
+
+  loader.addEventListener(google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED, function (e) {
+    adsManager = e.getAdsManager(video);
+    var T = google.ima.AdEvent.Type;
+    adsManager.addEventListener(T.STARTED, function () { clearTimeout(timeout); });
+    adsManager.addEventListener(T.ALL_ADS_COMPLETED, finish);
+    adsManager.addEventListener(T.SKIPPED, finish);
+    adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, finish);
+    adsManager.init(box.clientWidth, box.clientHeight, google.ima.ViewMode.NORMAL);
+    adsManager.start();
+  });
+  loader.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, finish);
+
+  var req = new google.ima.AdsRequest();
+  req.adTagUrl = VAST_URL + '&cb=' + Date.now();
+  req.linearAdSlotWidth = box.clientWidth;
+  req.linearAdSlotHeight = box.clientHeight;
+  loader.requestAds(req);
+}
+</script>
 <script id="nativeplayer">
 (function () {
   window.initPlayers = function (root) {
